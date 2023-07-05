@@ -42,7 +42,7 @@ Alien: Dark Green
 Alien Shot: Bright Green
 Player Shot: Yellow
 Destroyed Rock: Red
-[[file:screenshot.png][file:~/proj/bootcamp/caveInvaders/screenshot.png]]   
+[[screenshot][screenshot.png]]   
 4px is one block
 visible screen is approx 50blocks by 50 blocks
 At Game End the screen flashes white and shows a pixel art end screen with an ugly alien and your score.
