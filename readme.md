@@ -63,8 +63,7 @@ which is press space to start. Incredibly simple units are represented
 by a singular block on the map of different colors. Empty Space: Black
 Rock: Brown Player: Blue Base: Gold Alien: Dark Green Alien Shot: Bright
 Green Player Shot: Yellow Destroyed Rock: Red
-<https://www.pixilart.com/art/cave-invaders-sr2bb87eb57af81>
-![](file:///usr/home/michael/org/roam/images/66c3bcea-faae-4dca-9bac-1286c9fd771f.png)
+![](screenshot.png)
 
 4px is one block visible screen is approx 50blocks by 50 blocks Map can
 be arbitrarily large scrolling is accomplished by keeping the player in
