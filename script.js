@@ -1,6 +1,8 @@
+let R = require("ramda");
 let body = document.querySelector("body");
 let board = document.querySelector("#board");
 
+console.log(typeof R);
 class Position {
     constructor(x, y) {
         this.x = x;
@@ -27,14 +29,6 @@ class Position {
     }
     copy() {
         return new Position(this.x, this.y);
-    }
-    within(area) {
-        return (
-            this.x >= 0 &&
-            this.y >= 0 &&
-            this.x < area.width &&
-            this.y < area.height
-        );
     }
 }
 
@@ -106,45 +100,50 @@ class Game {
             el.style.backgroundColor = palette[world[idx]];
         });
     }
-    entitiesWithinNMovesOfPos(pos, limit) {
-        return this.entities.filter((e) => e.pos.distanceBetween(pos) <= limit);
+    //TODO rewrite this with the idea of enttities that take up multiple spaces
+    entitiesWithinNMovesOfPos(positions, limit) {
+        // return this.entities.filter(
+        //     (e) => e.positions.distanceBetween(pos) <= limit
+        // );
     }
-    entityyAtPos(pos) {
+    entityAtPos(pos) {
         return this.entitiesWithinNMovesOfPos(pos, 0).length !== 0;
     }
+    unoccupied(pos) {
+        return this.entitiesWithinNMovesOfPos(pos, 0).length === 0;
+    }
     addDots() {
-        // let p1 = new Position(3, 0);
-        // let p2 = new Position(0, 30);
-        // let dotty = new Dot(p1, east, "blue", this);
-        // let dotty2 = new Dot(p2, east, "red", this);
-        // this.entities.push(dotty);
-        // this.entities.push(dotty2);
         for (let i = 0; i < 50; i++) {
             let p = new Position(0, i);
-            let dotty = new Dot(p, east, "blue", this);
+            let dotty = new Dot([p], east, "blue", this);
             this.entities.push(dotty);
         }
         for (let i = 0; i < 50; i++) {
             let p = new Position(20, i);
-            let dotty = new Dot(p, east, "red", this);
+            let dotty = new Dot([p], east, "red", this);
             this.entities.push(dotty);
         }
     }
 }
 
 class Entity {
-    constructor(pos, game) {
-        this.pos = pos;
-        this.update = (world, pos) => world;
+    constructor(positions, game) {
+        this.positions = positions;
+        this.game = game;
+        this.update = (world, position) => world;
     }
     near(limit) {
         return game
             .entitiesWithinNMovesOfPos(this.pos, limit)
             .filter((e) => e !== this);
     }
+    clear(positions) {
+        positions.every((p) => this.game.unoccupied(p));
+    }
+
     move(direction) {
-        let proposed = this.pos.add(this.direction);
-        if (!game.entityyAtPos(proposed)) this.pos = proposed;
+        let proposed = this.positions.map((p) => p.add(direction));
+        // if (this.clear(proposed)) this.positions = proposed;
     }
     changeDirection(direction) {
         this.direction = direction;
@@ -152,15 +151,15 @@ class Entity {
 }
 
 class Dot extends Entity {
-    constructor(pos, direction, color, game) {
-        super(pos, game);
+    constructor(positions, direction, color, game) {
+        super(positions, game);
         this.direction = direction;
         this.color = color;
     }
 
     update = (world) => {
         this.move(this.direction);
-        world[game.posToOffset(this.pos)] = paletteValues[this.color];
+        world[game.posToOffset(this.positions[0])] = paletteValues[this.color];
         return world;
     };
 }
@@ -183,4 +182,11 @@ function timer(fn) {
 
     var end = performance.now();
     return end - start;
+}
+
+if (typeof process === "object") {
+    exports.timer = timer;
+    exports.Game = Game;
+    exports.Entity = Entity;
+    exports.Position = Position;
 }
