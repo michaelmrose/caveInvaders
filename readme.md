@@ -95,18 +95,18 @@ directional keys point ship in that direction space fire weapon
 
 # Stretch Items
 
-## [TODO]{.todo .TODO} Diagonal movement {#diagonal-movement}
+## Diagonal movement
 
-## [TODO]{.todo .TODO} Pathing {#pathing}
+## Pathing
 
 Have aliens path through caves when it would be shorter than boring
 through or semi randomly to add variety
 
-## [TODO]{.todo .TODO} Have aliens spread out when multiple are in the same space {#have-aliens-spread-out-when-multiple-are-in-the-same-space}
+## Have aliens spread out when multiple are in the same space
 
-## [TODO]{.todo .TODO} Have aliens decide whether to continue on or follow player semi intelligently/semi randomly {#have-aliens-decide-whether-to-continue-on-or-follow-player-semi-intelligentlysemi-randomly}
+## Have aliens decide whether to continue on or follow player semi intelligently/semi randomly
 
-## [TODO]{.todo .TODO} Different types of aliens {#different-types-of-aliens}
+## Different types of aliens
 
 -   large (2x2)bomb aliens that explode if the player gets within some
     number of spaces taking out a large amount of space. Rather than
@@ -119,27 +119,27 @@ through or semi randomly to add variety
 -   slow large (2x2)pod aliens that can dig and shoot that turn into
     multiple regular aliens when shot.
 
-## [TODO]{.todo .TODO} Life bar/hp {#life-barhp}
+## Life bar/hp
 
 Instead of having shots kill have it remove hp with differing number of
 hp per entity
 
-## [TODO]{.todo .TODO} Powerups {#powerups}
+## Powerups
 
 -   Faster movement
 -   Life restoration
 -   Faster shooting
 
-## [TODO]{.todo .TODO} Visibility Rules {#visibility-rules}
+## Visibility Rules
 
 Don\'t show areas the player can\'t see to heighten tension
 
-## [TODO]{.todo .TODO} Flash rocks between white and brown to indicate nearby rocks blown up {#flash-rocks-between-white-and-brown-to-indicate-nearby-rocks-blown-up}
+## Flash rocks between white and brown to indicate nearby rocks blown up
 
-## [TODO]{.todo .TODO} Aliens that blow up kill other nearby aliens {#aliens-that-blow-up-kill-other-nearby-aliens}
+## Aliens that blow up kill other nearby aliens
 
 used to indicate a upcoming alien breakthrough
 
-## [TODO]{.todo .TODO} Different alien weapons {#different-alien-weapons}
+## Different alien weapons
 
 fast shot and digging weapon
