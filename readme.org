@@ -15,8 +15,6 @@ The players weapon is much faster than the alien
 
 If the player comes within a certain number of spaces of the alien it will fire its weapon at the player. If another alien in the way it wont fire. 
 
-The players weapon is much faster than the alien but does not destroy walls thus the player is obligated to use the passages or the holes drilled by aliens to traverse the map and destroy the aliens.
-
 The player earns point for each alien destroyed until the aliens destroy the base.
 
 The internal tick of the game clock is bounded by the time taken for the fastest item to travel one square for simplicity of collision detection.
