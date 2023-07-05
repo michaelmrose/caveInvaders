@@ -146,6 +146,9 @@ class Entity {
         let proposed = this.pos.add(this.direction);
         if (!game.entityyAtPos(proposed)) this.pos = proposed;
     }
+    changeDirection(direction) {
+        this.direction = direction;
+    }
 }
 
 class Dot extends Entity {
@@ -160,9 +163,6 @@ class Dot extends Entity {
         world[game.posToOffset(this.pos)] = paletteValues[this.color];
         return world;
     };
-    changeDirection(direction) {
-        this.direction = direction;
-    }
 }
 
 let game = new Game(board);
