@@ -1,4 +1,4 @@
-let R = require("ramda");
+// let R = require("ramda");
 /* need a Game and Entity class if I can't figure out how to more completely separate these pass game to entity
  or call static methods on Game if it doesn't need specific parameters. Different types of entities will subclass Entity
  Entity will include player, aliens, shots fired, solid objects, possible subclasses include enemy, wall, bullet, player
@@ -20,4 +20,9 @@ let R = require("ramda");
  destroyed. The game end logic happens.
 
 As soon as all logic happens everything is rendered by calling render on the background and then all entities.
+
+Control of player happens by plugging actions into a buffer to be evaluated next tick to be evaluated in turn. 
+Notably hitting up 17 times really fast doesn't mean the player can move further or fire faster  in one turn. 
+They should be asyncstuffed into the buffer and emptied each tick. If direction exists move in the first direction hit
+If space exists fire, if escape exists pause at beginning of tick.
  */
