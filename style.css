@@ -1,16 +1,4 @@
 body {
     height: 100vh;
     margin: 0;
-    display: flex;
-    flex-direction: row;
-}
-.boardElement {
-    height: 2vmin;
-    width: 2vmin;
-    background-color: black;
-}
-#board {
-    display: grid;
-    grid-template-rows: repeat(50, 2vmin);
-    grid-template-columns: repeat(60, 2vmin);
 }
