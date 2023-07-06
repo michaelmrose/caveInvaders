@@ -26,3 +26,211 @@ Notably hitting up 17 times really fast doesn't mean the player can move further
 They should be asyncstuffed into the buffer and emptied each tick. If direction exists move in the first direction hit
 If space exists fire, if escape exists pause at beginning of tick.
  */
+
+class Game {
+    constructor(canvasElement) {
+        this.canvas = canvasElement;
+        this.ctx = canvas.getContext("2d");
+        this.canvas.setAttribute("height", getComputedStyle(canvas)["height"]);
+        this.canvas.setAttribute("width", getComputedStyle(canvas)["width"]);
+        this.entities = [];
+        this.board = [];
+        this.width = 60;
+        this.height = 48;
+        this.elementSize = this.canvas.width / this.width;
+        this.ctx.fillStyle = "red";
+    }
+    clear() {
+        this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    color(x, y, color) {
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(
+            x * this.elementSize,
+            y * this.elementSize,
+            this.elementSize,
+            this.elementSize
+        );
+    }
+    render() {
+        this.clear();
+        this.entities.forEach((e) => {
+            e.render();
+        });
+    }
+    loop() {
+        setInterval(() => {
+            this.render();
+        }, 33);
+    }
+}
+class Entity {
+    constructor(x, y, game) {
+        this.x = x;
+        this.y = y;
+        this.game = game;
+        game.entities.push(this);
+        this.positions = this.positionsUp;
+        this.position = "up";
+        this.colors = ["red", "pink"];
+    }
+    render() {
+        this.positions().forEach((p) => {
+            this.game.color(p.x, p.y, p.color);
+        });
+    }
+    move(direction) {
+        switch (direction) {
+            case "up":
+                this.y = this.y - 1;
+                break;
+            case "down":
+                this.y = this.y + 1;
+                break;
+            case "left":
+                this.x = this.x - 1;
+                break;
+            case "right":
+                this.x = this.x + 1;
+                break;
+        }
+    }
+    forward() {
+        this.move(this.position);
+    }
+    back() {
+        switch (this.position) {
+            case "up":
+                this.move("down");
+                break;
+            case "down":
+                this.move("up");
+                break;
+            case "left":
+                this.move("right");
+                break;
+            case "right":
+                this.move("left");
+                break;
+        }
+    }
+    rotateCounter() {
+        switch (this.position) {
+            case "up":
+                this.position = "left";
+                this.positions = this.positionsLeft;
+                break;
+            case "down":
+                this.position = "right";
+                this.positions = this.positionsRight;
+                break;
+            case "left":
+                this.position = "down";
+                this.positions = this.positionsDown;
+                break;
+            case "right":
+                this.position = "up";
+                this.positions = this.positionsUp;
+                break;
+        }
+    }
+
+    rotateClockwise() {
+        switch (this.position) {
+            case "up":
+                this.position = "right";
+                this.positions = this.positionsRight;
+                break;
+            case "down":
+                this.position = "left";
+                this.positions = this.positionsLeft;
+                break;
+            case "left":
+                this.position = "up";
+                this.positions = this.positionsUp;
+                break;
+            case "right":
+                this.position = "down";
+                this.positions = this.positionsDown;
+                break;
+        }
+    }
+}
+class Ship extends Entity {
+    constructor(x, y, game) {
+        super(x, y, game);
+    }
+    positionsUp() {
+        return [
+            { x: this.x, y: this.y, color: this.colors[0] },
+            { x: this.x, y: this.y - 1, color: this.colors[1] },
+        ];
+    }
+    positionsDown() {
+        return [
+            { x: this.x, y: this.y, color: this.colors[0] },
+            { x: this.x, y: this.y + 1, color: this.colors[1] },
+        ];
+    }
+    positionsLeft() {
+        return [
+            { x: this.x, y: this.y, color: this.colors[0] },
+            { x: this.x - 1, y: this.y, color: this.colors[1] },
+        ];
+    }
+    positionsRight() {
+        return [
+            { x: this.x, y: this.y, color: this.colors[0] },
+            { x: this.x + 1, y: this.y, color: this.colors[1] },
+        ];
+    }
+}
+class PlayerShip extends Ship {
+    constructor(x, y, game) {
+        super(x, y, game);
+        this.colors = ["blue", "lightblue"];
+    }
+}
+class AlienShip extends Ship {
+    constructor(x, y, game) {
+        super(x, y, game);
+        this.colors = ["green", "lightgreen"];
+    }
+}
+let canvas = document.querySelector("#canvas");
+let game = new Game(canvas);
+
+let foo = new PlayerShip(20, 20, game);
+let bar = new AlienShip(30, 20, game);
+canvas.focus();
+document.addEventListener("keydown", handleKeys);
+function handleKeys(evt) {
+    console.log(evt.key);
+    switch (evt.key) {
+        case "w":
+            foo.forward();
+            break;
+        case "a":
+            foo.rotateCounter();
+            break;
+        case "s":
+            foo.back();
+            break;
+        case "d":
+            foo.rotateClockwise();
+            break;
+        case "ArrowUp":
+            foo.forward();
+            break;
+        case "ArrowLeft":
+            foo.rotateCounter();
+            break;
+        case "ArrowDown":
+            foo.back();
+            break;
+        case "ArrowRight":
+            foo.rotateClockwise();
+            break;
+    }
+}
+game.loop();
