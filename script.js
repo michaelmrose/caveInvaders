@@ -34,9 +34,16 @@ class Game {
         this.canvas.setAttribute("height", getComputedStyle(canvas)["height"]);
         this.canvas.setAttribute("width", getComputedStyle(canvas)["width"]);
         this.entities = [];
-        this.board = [];
         this.width = 60;
         this.height = 48;
+        this.board = [];
+        this.row = [];
+        for (let i = 0; i < this.width; i++) {
+            this.row.push(0);
+        }
+        for (let i = 0; i < this.height; i++) {
+            this.board.push(this.row.slice(0));
+        }
         this.elementSize = this.canvas.width / this.width;
         this.ctx.fillStyle = "red";
     }
@@ -51,6 +58,9 @@ class Game {
             this.elementSize,
             this.elementSize
         );
+    }
+    positionInsideBoard(p) {
+        return p.x >= 0 && p.y >= 0 && p.x < this.width && p.y < this.height;
     }
     render() {
         this.clear();
@@ -73,13 +83,21 @@ class Entity {
         this.positions = this.positionsUp;
         this.position = "up";
         this.colors = ["red", "pink"];
+        this.claimPointsOnBoard();
     }
     render() {
         this.positions().forEach((p) => {
             this.game.color(p.x, p.y, p.color);
         });
     }
+    allPositionsWithinBoard() {
+        return this.positions().every((p) => {
+            return game.positionInsideBoard({ x: p.x, y: p.y });
+        });
+    }
     move(direction) {
+        let priorX = this.x;
+        let priorY = this.y;
         switch (direction) {
             case "up":
                 this.y = this.y - 1;
@@ -94,6 +112,12 @@ class Entity {
                 this.x = this.x + 1;
                 break;
         }
+        if (this.allPositionsWithinBoard()) this.claimPointsOnBoard;
+        else {
+            this.x = priorX;
+            this.y = priorY;
+        }
+        console.log(`x ${this.x} y ${this.y}`);
     }
     forward() {
         this.move(this.position);
@@ -113,6 +137,11 @@ class Entity {
                 this.move("left");
                 break;
         }
+    }
+    claimPointsOnBoard() {
+        this.positions().forEach((p) => {
+            game.board[p.y][p.x] = this;
+        });
     }
     rotateCounter() {
         switch (this.position) {
@@ -200,12 +229,11 @@ class AlienShip extends Ship {
 let canvas = document.querySelector("#canvas");
 let game = new Game(canvas);
 
-let foo = new PlayerShip(20, 20, game);
+let foo = new PlayerShip(59, 1, game);
 let bar = new AlienShip(30, 20, game);
 canvas.focus();
 document.addEventListener("keydown", handleKeys);
 function handleKeys(evt) {
-    console.log(evt.key);
     switch (evt.key) {
         case "w":
             foo.forward();
