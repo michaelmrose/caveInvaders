@@ -67,6 +67,18 @@ class Game {
             e.render();
         });
     }
+    rockIt() {
+        let top = range(this.width);
+        for (let i = 0; i < top.length; i++) {
+            new Rock(i, 0, this);
+            new Rock(i, this.height - 1, this);
+        }
+        let sides = range(this.height);
+        for (let i = 0; i < sides.length; i++) {
+            new Rock(0, i, this);
+            new Rock(this.width - 1, i, this);
+        }
+    }
     loop() {
         setInterval(() => {
             this.render();
@@ -84,6 +96,23 @@ class Entity {
         this.colors = ["red", "pink"];
         this.priorPositions = this.positions();
         this.claimPointsOnBoard();
+    }
+
+    positionsUp() {
+        return [{ x: this.x, y: this.y, color: this.colors[0] }];
+    }
+    positionsDown() {
+        return [{ x: this.x, y: this.y, color: this.colors[0] }];
+    }
+    positionsLeft() {
+        return [{ x: this.x, y: this.y, color: this.colors[0] }];
+    }
+    positionsRight() {
+        return [{ x: this.x, y: this.y, color: this.colors[0] }];
+    }
+    onCollide(thing) {
+        this.destroy();
+        thing.destroy();
     }
     render() {
         this.positions().forEach((p) => {
@@ -193,9 +222,6 @@ class Entity {
     destroy() {
         game.entities = game.entities.filter((e) => e !== this);
     }
-    onCollide(thing) {
-        console.log(`this ${this} collided with ${thing}`);
-    }
     checkForCollsion() {
         this.positions().forEach((p) => {
             let thingAtPosition = game.board[p.y][p.x];
@@ -254,41 +280,17 @@ class PlayerShip extends Ship {
         super(x, y, game);
         this.colors = ["blue", "lightblue"];
     }
-    onCollide(thing) {
-        this.destroy();
-        thing.destroy();
-    }
 }
 class AlienShip extends Ship {
     constructor(x, y, game) {
         super(x, y, game);
         this.colors = ["green", "lightgreen"];
     }
-    onCollide(thing) {
-        this.destroy();
-        thing.destroy();
-    }
 }
 
 class Shot extends Entity {
     constructor(x, y, game) {
         super(x, y, game);
-    }
-    positionsUp() {
-        return [{ x: this.x, y: this.y, color: this.colors[0] }];
-    }
-    positionsDown() {
-        return [{ x: this.x, y: this.y, color: this.colors[0] }];
-    }
-    positionsLeft() {
-        return [{ x: this.x, y: this.y, color: this.colors[0] }];
-    }
-    positionsRight() {
-        return [{ x: this.x, y: this.y, color: this.colors[0] }];
-    }
-    onCollide(thing) {
-        this.destroy();
-        thing.destroy();
     }
 }
 
@@ -304,13 +306,22 @@ class AlienShot extends Shot {
         this.colors = ["yellow"];
     }
 }
+class Rock extends Entity {
+    constructor(x, y, game) {
+        super(x, y, game);
+        this.colors = ["brown"];
+    }
+}
 let canvas = document.querySelector("#canvas");
 let game = new Game(canvas);
+//TODO this has to do with rounding I think I'm manually padding it to ensure the last block isn't partially off screen look into a more proper fix
+canvas.height += 6;
 
 let foo = new PlayerShip(30, 20, game);
 let bar = new AlienShip(20, 24, game);
 let zip = new PlayerShot(30, 28, game);
 let zap = new AlienShot(15, 20, game);
+game.rockIt();
 canvas.focus();
 document.addEventListener("keydown", handleKeys);
 function handleKeys(evt) {
@@ -349,6 +360,7 @@ function handleKeys(evt) {
 }
 game.loop();
 
+// derived from class discussion
 function rand(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -358,4 +370,17 @@ function randomPositionWithinBoard() {
     let x = rand(0, 59);
     let y = rand(0, 48);
     return game.board[y][x];
+}
+
+//derived in part from https://stackoverflow.com/questions/3895478/does-javascript-have-a-method-like-range-to-generate-a-range-within-the-supp
+function range(start, end) {
+    let s, e;
+    if (typeof end === "undefined") {
+        s = 0;
+        e = start;
+    } else {
+        s = start;
+        e = end;
+    }
+    return Array.from({ length: e - s }, (x, i) => i).map((x) => x + s);
 }
