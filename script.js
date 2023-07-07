@@ -83,6 +83,7 @@ class Entity {
         this.positions = this.positionsUp;
         this.position = "up";
         this.colors = ["red", "pink"];
+        this.priorPositions = this.positions();
         this.claimPointsOnBoard();
     }
     render() {
@@ -96,8 +97,9 @@ class Entity {
         });
     }
     move(direction) {
-        let priorX = this.x;
-        let priorY = this.y;
+        this.changePositionOrReset((dir) => this._move(direction));
+    }
+    _move(direction) {
         switch (direction) {
             case "up":
                 this.y = this.y - 1;
@@ -112,12 +114,6 @@ class Entity {
                 this.x = this.x + 1;
                 break;
         }
-        if (this.allPositionsWithinBoard()) this.claimPointsOnBoard;
-        else {
-            this.x = priorX;
-            this.y = priorY;
-        }
-        console.log(`x ${this.x} y ${this.y}`);
     }
     forward() {
         this.move(this.position);
@@ -139,11 +135,17 @@ class Entity {
         }
     }
     claimPointsOnBoard() {
+        this.priorPositions.forEach((p) => {
+            this.game.board[p.y][p.x] = 0;
+        });
         this.positions().forEach((p) => {
-            game.board[p.y][p.x] = this;
+            this.game.board[p.y][p.x] = this;
         });
     }
     rotateCounter() {
+        this.changePositionOrReset(this._rotateCounter.bind(this));
+    }
+    _rotateCounter() {
         switch (this.position) {
             case "up":
                 this.position = "left";
@@ -163,8 +165,12 @@ class Entity {
                 break;
         }
     }
-
+    // TODO THIS DOESNT KEEP PLAYER FROM ROTATING OUT OF THE BOARD
+    // THERE IS A LOGIC ERROR HERE
     rotateClockwise() {
+        this.changePositionOrReset(this._rotateClockwise.bind(this));
+    }
+    _rotateClockwise() {
         switch (this.position) {
             case "up":
                 this.position = "right";
@@ -182,6 +188,20 @@ class Entity {
                 this.position = "down";
                 this.positions = this.positionsDown;
                 break;
+        }
+    }
+
+    // performs OP but rolls back values if it results in an invalid state intended to be used by movement and rotation functions
+    changePositionOrReset(op) {
+        let priorX = this.x;
+        let priorY = this.y;
+        this.priorPositions = this.positions();
+        op();
+        if (this.allPositionsWithinBoard()) {
+            this.claimPointsOnBoard();
+        } else {
+            this.x = priorX;
+            this.y = priorY;
         }
     }
 }
@@ -239,12 +259,18 @@ function handleKeys(evt) {
             foo.forward();
             break;
         case "a":
+            foo.move("left");
+            break;
+        case "d":
+            foo.move("right");
+            break;
+        case "q":
             foo.rotateCounter();
             break;
         case "s":
             foo.back();
             break;
-        case "d":
+        case "e":
             foo.rotateClockwise();
             break;
         case "ArrowUp":
