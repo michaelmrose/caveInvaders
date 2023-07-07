@@ -11,8 +11,7 @@
  will do is write a reference to itself to the board.
  
  Each entity that moves will not deliberately move into a position that is occupied by any other entity.  If it does try 
- to do so it will end up calling onCollsion with the  pre-existing entity as an argument. The simplest thing to do is 
- probably initially just destroy both either on pre-existing square or by destroying first the item at the square then 
+ to do so it will end up calling onCollsion with the  pre-existing entity as an argument. The simplest thing to do is probably initially just destroy both either on pre-existing square or by destroying first the item at the square then 
  moving into the square and being destroyed in turn. Updates shall be processed sequentally starting with the player, 
  so that logic remains consistent. Eg a missile advances nothing is in that space so nothing further happens. Then 
  the player is advanced by virtue of having pressed an arrow key and finds itself moving to the same space as the 
@@ -192,7 +191,7 @@ class Entity {
     }
     // TODO there should be a better way than filtering the whole list access via ID?
     destroy() {
-        game.entities = game.entities.filter((e) => e === this);
+        game.entities = game.entities.filter((e) => e !== this);
     }
     onCollide(thing) {
         console.log(`this ${this} collided with ${thing}`);
@@ -201,7 +200,7 @@ class Entity {
         this.positions().forEach((p) => {
             let thingAtPosition = game.board[p.y][p.x];
             if (thingAtPosition !== 0 && thingAtPosition !== this) {
-                this.onCollide(thingAtPosition);
+                thingAtPosition.onCollide(this);
                 return true;
             }
         });
@@ -256,6 +255,7 @@ class PlayerShip extends Ship {
         this.colors = ["blue", "lightblue"];
     }
     onCollide(thing) {
+        this.destroy();
         thing.destroy();
     }
 }
@@ -266,13 +266,51 @@ class AlienShip extends Ship {
     }
     onCollide(thing) {
         this.destroy();
+        thing.destroy();
+    }
+}
+
+class Shot extends Entity {
+    constructor(x, y, game) {
+        super(x, y, game);
+    }
+    positionsUp() {
+        return [{ x: this.x, y: this.y, color: this.colors[0] }];
+    }
+    positionsDown() {
+        return [{ x: this.x, y: this.y, color: this.colors[0] }];
+    }
+    positionsLeft() {
+        return [{ x: this.x, y: this.y, color: this.colors[0] }];
+    }
+    positionsRight() {
+        return [{ x: this.x, y: this.y, color: this.colors[0] }];
+    }
+    onCollide(thing) {
+        this.destroy();
+        thing.destroy();
+    }
+}
+
+class PlayerShot extends Shot {
+    constructor(x, y, game) {
+        super(x, y, game);
+        this.colors = ["red"];
+    }
+}
+class AlienShot extends Shot {
+    constructor(x, y, game) {
+        super(x, y, game);
+        this.colors = ["yellow"];
     }
 }
 let canvas = document.querySelector("#canvas");
 let game = new Game(canvas);
 
-let foo = new PlayerShip(30, 22, game);
-let bar = new AlienShip(30, 20, game);
+let foo = new PlayerShip(30, 20, game);
+let bar = new AlienShip(20, 24, game);
+let zip = new PlayerShot(30, 28, game);
+let zap = new AlienShot(15, 20, game);
 canvas.focus();
 document.addEventListener("keydown", handleKeys);
 function handleKeys(evt) {
@@ -310,3 +348,14 @@ function handleKeys(evt) {
     }
 }
 game.loop();
+
+function rand(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function randomPositionWithinBoard() {
+    let x = rand(0, 59);
+    let y = rand(0, 48);
+    return game.board[y][x];
+}
