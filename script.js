@@ -190,14 +190,30 @@ class Entity {
                 break;
         }
     }
-
+    // TODO there should be a better way than filtering the whole list access via ID?
+    destroy() {
+        game.entities = game.entities.filter((e) => e === this);
+    }
+    onCollide(thing) {
+        console.log(`this ${this} collided with ${thing}`);
+    }
+    checkForCollsion() {
+        this.positions().forEach((p) => {
+            let thingAtPosition = game.board[p.y][p.x];
+            if (thingAtPosition !== 0 && thingAtPosition !== this) {
+                this.onCollide(thingAtPosition);
+                return true;
+            }
+        });
+        return false;
+    }
     // performs OP but rolls back values if it results in an invalid state intended to be used by movement and rotation functions
     changePositionOrReset(op) {
         let priorX = this.x;
         let priorY = this.y;
         this.priorPositions = this.positions();
         op();
-        if (this.allPositionsWithinBoard()) {
+        if (this.allPositionsWithinBoard() && !this.checkForCollsion()) {
             this.claimPointsOnBoard();
         } else {
             this.x = priorX;
@@ -239,17 +255,23 @@ class PlayerShip extends Ship {
         super(x, y, game);
         this.colors = ["blue", "lightblue"];
     }
+    onCollide(thing) {
+        thing.destroy();
+    }
 }
 class AlienShip extends Ship {
     constructor(x, y, game) {
         super(x, y, game);
         this.colors = ["green", "lightgreen"];
     }
+    onCollide(thing) {
+        this.destroy();
+    }
 }
 let canvas = document.querySelector("#canvas");
 let game = new Game(canvas);
 
-let foo = new PlayerShip(59, 1, game);
+let foo = new PlayerShip(30, 22, game);
 let bar = new AlienShip(30, 20, game);
 canvas.focus();
 document.addEventListener("keydown", handleKeys);
