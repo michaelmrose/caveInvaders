@@ -80,9 +80,13 @@ class Game {
         }
     }
     loop() {
-        setInterval(() => {
+        this.loop = setInterval(() => {
             this.render();
         }, 33);
+    }
+    end() {
+        clearInterval(this.loop);
+        this.clear();
     }
 }
 class Entity {
@@ -109,10 +113,6 @@ class Entity {
     }
     positionsRight() {
         return [{ x: this.x, y: this.y, color: this.colors[0] }];
-    }
-    onCollide(thing) {
-        this.destroy();
-        thing.destroy();
     }
     render() {
         this.positions().forEach((p) => {
@@ -227,6 +227,7 @@ class Entity {
             let thingAtPosition = game.board[p.y][p.x];
             if (thingAtPosition !== 0 && thingAtPosition !== this) {
                 thingAtPosition.onCollide(this);
+                this.onCollide(thingAtPosition);
                 return true;
             }
         });
@@ -280,17 +281,38 @@ class PlayerShip extends Ship {
         super(x, y, game);
         this.colors = ["blue", "lightblue"];
     }
+    onCollide(thing) {
+        if (thing instanceof Base) {
+        } else {
+            thing.destroy();
+            this.destroy();
+            game.end();
+        }
+    }
 }
 class AlienShip extends Ship {
     constructor(x, y, game) {
         super(x, y, game);
         this.colors = ["green", "lightgreen"];
     }
+    onCollide(thing) {
+        this.destroy();
+        thing.destroy();
+    }
 }
 
 class Shot extends Entity {
     constructor(x, y, game) {
         super(x, y, game);
+    }
+
+    onCollide(thing) {
+        if (thing instanceof Base) {
+            this.destroy();
+        } else {
+            this.destroy();
+            thing.destroy();
+        }
     }
 }
 
@@ -309,19 +331,60 @@ class AlienShot extends Shot {
 class Rock extends Entity {
     constructor(x, y, game) {
         super(x, y, game);
-        this.colors = ["brown"];
+        this.colors = ["maroon"];
+    }
+}
+class Base extends Entity {
+    constructor(x, y, game) {
+        super(x, y, game);
+        this.colors = ["gold"];
+    }
+
+    positionsUp() {
+        return [
+            { x: this.x, y: this.y, color: this.colors[0] },
+            { x: this.x + 1, y: this.y, color: this.colors[0] },
+            { x: this.x + 2, y: this.y, color: this.colors[0] },
+
+            { x: this.x, y: this.y + 1, color: this.colors[0] },
+            { x: this.x + 1, y: this.y + 1, color: this.colors[0] },
+            { x: this.x + 2, y: this.y + 1, color: this.colors[0] },
+
+            { x: this.x, y: this.y + 2, color: this.colors[0] },
+            { x: this.x + 1, y: this.y + 2, color: this.colors[0] },
+            { x: this.x + 2, y: this.y + 2, color: this.colors[0] },
+        ];
+    }
+    positionsDown() {
+        return this.positionsUp();
+    }
+    positionsLeft() {
+        return this.positionsUp();
+    }
+    positionsRight() {
+        return this.positionsUp();
+    }
+    onCollide(thing) {
+        if (thing instanceof AlienShip) this.destroy;
+        //TODO this logic doesn't work
+        if (thing instanceof Shot) thing.destroy;
+    }
+    destroy() {
+        super.destroy();
+        game.end();
     }
 }
 let canvas = document.querySelector("#canvas");
 let game = new Game(canvas);
 //TODO this has to do with rounding I think I'm manually padding it to ensure the last block isn't partially off screen look into a more proper fix
-canvas.height += 6;
+canvas.height += 5;
 
 let foo = new PlayerShip(30, 20, game);
 let bar = new AlienShip(20, 24, game);
 let zip = new PlayerShot(30, 28, game);
 let zap = new AlienShot(15, 20, game);
-game.rockIt();
+let base = new Base(30, 30, game);
+// game.rockIt();
 canvas.focus();
 document.addEventListener("keydown", handleKeys);
 function handleKeys(evt) {
