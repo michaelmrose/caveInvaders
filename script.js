@@ -32,17 +32,20 @@ class Game {
         this.ctx = canvas.getContext("2d");
         this.canvas.setAttribute("height", getComputedStyle(canvas)["height"]);
         this.canvas.setAttribute("width", getComputedStyle(canvas)["width"]);
+        this.canvas.height += 5;
         this.entities = [];
         this.width = 60;
         this.height = 48;
         this.board = [];
         this.row = [];
+        this.ended = false;
         for (let i = 0; i < this.width; i++) {
             this.row.push(0);
         }
         for (let i = 0; i < this.height; i++) {
             this.board.push(this.row.slice(0));
         }
+        this.emptyBoard = structuredClone(this.board);
         this.elementSize = this.canvas.width / this.width;
         this.ctx.fillStyle = "red";
     }
@@ -79,14 +82,34 @@ class Game {
             new Rock(this.width - 1, i, this);
         }
     }
-    loop() {
+    startLoop() {
         this.loop = setInterval(() => {
             this.render();
         }, 33);
     }
+    scenario() {
+        this.foo = new PlayerShip(30, 20, game);
+        this.bar = new AlienShip(20, 24, game);
+        this.zip = new PlayerShot(30, 28, game);
+        this.zap = new AlienShot(15, 20, game);
+        this.base = new Base(30, 30, game);
+        this.rockIt();
+    }
+    start() {
+        this.ended = false;
+        this.startLoop();
+    }
     end() {
+        this.ended = false;
         clearInterval(this.loop);
         this.clear();
+        this.entities = [];
+        this.board = structuredClone(this.emptyBoard);
+    }
+    restart() {
+        if (!game.ended) game.end();
+        game.scenario();
+        game.start();
     }
 }
 class Entity {
@@ -374,54 +397,62 @@ class Base extends Entity {
         game.end();
     }
 }
-let canvas = document.querySelector("#canvas");
-let game = new Game(canvas);
-//TODO this has to do with rounding I think I'm manually padding it to ensure the last block isn't partially off screen look into a more proper fix
-canvas.height += 5;
 
-let foo = new PlayerShip(30, 20, game);
-let bar = new AlienShip(20, 24, game);
-let zip = new PlayerShot(30, 28, game);
-let zap = new AlienShot(15, 20, game);
-let base = new Base(30, 30, game);
-// game.rockIt();
+//=======================================================================
+// Setup
+//=======================================================================
+
+let canvas = document.querySelector("#canvas");
 canvas.focus();
-document.addEventListener("keydown", handleKeys);
+let game = new Game(canvas);
+game.scenario();
+game.start();
+
 function handleKeys(evt) {
     switch (evt.key) {
         case "w":
-            foo.forward();
+            game.foo.forward();
             break;
         case "a":
-            foo.move("left");
+            game.foo.move("left");
             break;
         case "d":
-            foo.move("right");
+            game.foo.move("right");
             break;
         case "q":
-            foo.rotateCounter();
+            game.foo.rotateCounter();
             break;
         case "s":
-            foo.back();
+            game.foo.back();
             break;
         case "e":
-            foo.rotateClockwise();
+            game.foo.rotateClockwise();
             break;
         case "ArrowUp":
-            foo.forward();
+            game.foo.forward();
             break;
         case "ArrowLeft":
-            foo.rotateCounter();
+            game.foo.rotateCounter();
             break;
         case "ArrowDown":
-            foo.back();
+            game.foo.back();
             break;
         case "ArrowRight":
-            foo.rotateClockwise();
+            game.foo.rotateClockwise();
             break;
+        case "Escape":
+            game.restart();
+            break;
+        default:
+            console.log(evt.key);
     }
 }
-game.loop();
+
+document.addEventListener("keydown", handleKeys.bind(this));
+
+//=======================================================================
+// Misc
+//=======================================================================
 
 // derived from class discussion
 function rand(min, max) {
