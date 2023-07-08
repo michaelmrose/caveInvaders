@@ -32,9 +32,8 @@ class Game {
         this.ctx = canvas.getContext("2d");
         this.canvas.setAttribute("height", getComputedStyle(canvas)["height"]);
         this.canvas.setAttribute("width", getComputedStyle(canvas)["width"]);
-        this.canvas.height += 48;
         this.entities = [];
-        this.width = 120;
+        this.width = 128;
         this.height = 96;
         this.board = [];
         this.row = [];
@@ -46,7 +45,9 @@ class Game {
             this.board.push(this.row.slice(0));
         }
         this.emptyBoard = structuredClone(this.board);
+        //darn you canvas size rounding errors
         this.elementSize = this.canvas.width / this.width;
+        this.canvas.height = this.elementSize * 96;
         this.ctx.fillStyle = "red";
     }
     clear() {
@@ -88,10 +89,10 @@ class Game {
         }, 33);
     }
     scenario() {
-        this.foo = new PlayerShip(30, 20, game);
-        this.bar = new AlienShip(20, 24, game);
-        this.zip = new PlayerShot(30, 28, game);
-        this.zap = new AlienShot(15, 20, game);
+        this.foo = new PlayerShip(30, 20, game, "up");
+        this.bar = new AlienShip(20, 24, game, "up");
+        this.zip = new PlayerShot(30, 28, game, "up");
+        this.zap = new AlienShot(15, 20, game, "up");
         this.base = new Base(30, 30, game);
         this.rockIt();
     }
@@ -113,15 +114,16 @@ class Game {
     }
 }
 class Entity {
-    constructor(x, y, game) {
+    constructor(x, y, game, position) {
         this.x = x;
         this.y = y;
         this.game = game;
         game.entities.push(this);
         this.positions = this.positionsUp;
-        this.position = "up";
+        this.position = position;
         this.colors = ["red", "pink"];
         this.priorPositions = this.positions();
+        this.checkForCollsion();
         this.claimPointsOnBoard();
     }
 
@@ -249,7 +251,7 @@ class Entity {
         this.positions().forEach((p) => {
             let thingAtPosition = game.board[p.y][p.x];
             if (thingAtPosition !== 0 && thingAtPosition !== this) {
-                thingAtPosition.onCollide(this);
+                // thingAtPosition.onCollide(this);
                 this.onCollide(thingAtPosition);
                 return true;
             }
@@ -271,8 +273,25 @@ class Entity {
     }
 }
 class Ship extends Entity {
-    constructor(x, y, game) {
-        super(x, y, game);
+    constructor(x, y, game, position) {
+        super(x, y, game, position);
+        this.shotType = AlienShot;
+    }
+    shoot() {
+        switch (this.position) {
+            case "up":
+                new this.shotType(this.x, this.y - 4, this.game, this.position);
+                break;
+            case "down":
+                new this.shotType(this.x, this.y + 4, this.game, this.position);
+                break;
+            case "left":
+                new this.shotType(this.x - 4, this.y, this.game, this.position);
+                break;
+            case "right":
+                new this.shotType(this.x + 4, this.y, this.game, this.position);
+                break;
+        }
     }
     positionsUp() {
         return [
@@ -300,8 +319,9 @@ class Ship extends Entity {
     }
 }
 class PlayerShip extends Ship {
-    constructor(x, y, game) {
-        super(x, y, game);
+    constructor(x, y, game, position) {
+        super(x, y, game, position);
+        this.shotType = PlayerShot;
         this.colors = ["blue", "lightblue"];
     }
     onCollide(thing) {
@@ -314,8 +334,8 @@ class PlayerShip extends Ship {
     }
 }
 class AlienShip extends Ship {
-    constructor(x, y, game) {
-        super(x, y, game);
+    constructor(x, y, game, position) {
+        super(x, y, game, position);
         this.colors = ["green", "lightgreen"];
     }
     onCollide(thing) {
@@ -325,8 +345,8 @@ class AlienShip extends Ship {
 }
 
 class Shot extends Entity {
-    constructor(x, y, game) {
-        super(x, y, game);
+    constructor(x, y, game, position) {
+        super(x, y, game, position);
     }
 
     onCollide(thing) {
@@ -340,14 +360,14 @@ class Shot extends Entity {
 }
 
 class PlayerShot extends Shot {
-    constructor(x, y, game) {
-        super(x, y, game);
+    constructor(x, y, game, position) {
+        super(x, y, game), position;
         this.colors = ["red"];
     }
 }
 class AlienShot extends Shot {
-    constructor(x, y, game) {
-        super(x, y, game);
+    constructor(x, y, game, position) {
+        super(x, y, game, position);
         this.colors = ["yellow"];
     }
 }
@@ -446,6 +466,8 @@ function handleKeys(evt) {
         case "Escape":
             game.restart();
             break;
+        case " ":
+            game.foo.shoot();
         default:
             console.log(evt.key);
     }
