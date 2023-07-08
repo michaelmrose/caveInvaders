@@ -89,7 +89,7 @@ class Game {
         }, 33);
     }
     scenario() {
-        this.foo = new PlayerShip(30, 20, game, "up");
+        this.foo = new PlayerShip(3, 3, game, "up");
         this.bar = new AlienShip(20, 24, game, "up");
         this.zip = new PlayerShot(30, 28, game, "up");
         this.zap = new AlienShot(15, 20, game, "up");
@@ -119,9 +119,9 @@ class Entity {
         this.y = y;
         this.game = game;
         game.entities.push(this);
-        this.positions = this.positionsUp;
         this.position = position;
-        this.colors = ["red", "pink"];
+        this.positions = this.positionsUp;
+        this.colors = ["purple"];
         this.priorPositions = this.positions();
         this.checkForCollsion();
         this.claimPointsOnBoard();
@@ -245,13 +245,15 @@ class Entity {
     }
     // TODO there should be a better way than filtering the whole list access via ID?
     destroy() {
+        let ps = this.positions();
+        ps.forEach((p) => (this.game.board[p.y][p.x] = 0));
         game.entities = game.entities.filter((e) => e !== this);
     }
     checkForCollsion() {
         this.positions().forEach((p) => {
             let thingAtPosition = game.board[p.y][p.x];
             if (thingAtPosition !== 0 && thingAtPosition !== this) {
-                // thingAtPosition.onCollide(this);
+                thingAtPosition.onCollide(this);
                 this.onCollide(thingAtPosition);
                 return true;
             }
@@ -277,22 +279,7 @@ class Ship extends Entity {
         super(x, y, game, position);
         this.shotType = AlienShot;
     }
-    shoot() {
-        switch (this.position) {
-            case "up":
-                new this.shotType(this.x, this.y - 4, this.game, this.position);
-                break;
-            case "down":
-                new this.shotType(this.x, this.y + 4, this.game, this.position);
-                break;
-            case "left":
-                new this.shotType(this.x - 4, this.y, this.game, this.position);
-                break;
-            case "right":
-                new this.shotType(this.x + 4, this.y, this.game, this.position);
-                break;
-        }
-    }
+    // TODO for some reason shot is created with position = undefined which will prevent this from working when things are actually set in motion
     positionsUp() {
         return [
             { x: this.x, y: this.y, color: this.colors[0] },
@@ -324,10 +311,28 @@ class PlayerShip extends Ship {
         this.shotType = PlayerShot;
         this.colors = ["blue", "lightblue"];
     }
+
+    shoot() {
+        switch (this.position) {
+            case "up":
+                new this.shotType(this.x, this.y - 2, this.game, this.position);
+                // new PlayerShot(this.x, this.y - 2, this.game, this.position);
+                break;
+            case "down":
+                new this.shotType(this.x, this.y + 2, this.game, this.position);
+                break;
+            case "left":
+                new this.shotType(this.x - 2, this.y, this.game, this.position);
+                break;
+            case "right":
+                new this.shotType(this.x + 2, this.y, this.game, this.position);
+                break;
+        }
+    }
     onCollide(thing) {
         if (thing instanceof Base) {
+        } else if (thing instanceof Rock) {
         } else {
-            thing.destroy();
             this.destroy();
             game.end();
         }
@@ -340,22 +345,17 @@ class AlienShip extends Ship {
     }
     onCollide(thing) {
         this.destroy();
-        thing.destroy();
     }
 }
 
 class Shot extends Entity {
     constructor(x, y, game, position) {
         super(x, y, game, position);
+        this.position = "up";
     }
 
     onCollide(thing) {
-        if (thing instanceof Base) {
-            this.destroy();
-        } else {
-            this.destroy();
-            thing.destroy();
-        }
+        this.destroy();
     }
 }
 
@@ -377,7 +377,13 @@ class Rock extends Entity {
         this.colors = ["maroon"];
     }
     onCollide(thing) {
-        thing.destroy();
+        console.log("back loser");
+        thing.back();
+        thing.back();
+        thing.back();
+        thing.back();
+        //intruder may have overridden board positions
+        this.claimPointsOnBoard();
     }
 }
 class Base extends Entity {
