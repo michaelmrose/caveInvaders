@@ -32,10 +32,10 @@ class Game {
         this.ctx = canvas.getContext("2d");
         this.canvas.setAttribute("height", getComputedStyle(canvas)["height"]);
         this.canvas.setAttribute("width", getComputedStyle(canvas)["width"]);
-        this.canvas.height += 5;
+        this.canvas.height += 48;
         this.entities = [];
-        this.width = 60;
-        this.height = 48;
+        this.width = 120;
+        this.height = 96;
         this.board = [];
         this.row = [];
         this.ended = false;
@@ -355,6 +355,9 @@ class Rock extends Entity {
     constructor(x, y, game) {
         super(x, y, game);
         this.colors = ["maroon"];
+    }
+    onCollide(thing) {
+        thing.destroy();
     }
 }
 class Base extends Entity {
