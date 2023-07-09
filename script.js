@@ -51,6 +51,7 @@ class Game {
         this.canvas.height = this.elementSize * 96;
         this.ctx.fillStyle = "red";
         this.score = 0;
+        this.gameOverSound = new Audio("gameover.mp3");
     }
     clear() {
         this.ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -141,8 +142,7 @@ class Game {
         game.start();
     }
     renderScore() {
-        this.ctx.font = "20px Comic Sans MS";
-        this.ctx.fillText(this.score, canvas.width - 30, 30);
+        this.printToScreen(this.score, 30, this.canvas.width - 30, 30);
     }
     renderPaused() {
         if (this.paused === true) {
@@ -155,6 +155,7 @@ class Game {
         x = this.canvas.width / 2,
         y = this.canvas.height / 2
     ) {
+        this.fillStyle = "red";
         this.ctx.textAlign = "center";
         this.ctx.font = `${size}px Comic Sans MS`;
         this.ctx.fillText(text, x, y);
@@ -422,10 +423,13 @@ class Ship extends Entity {
         this.shotType = AlienShot;
         this.ticksToShoot = 80;
         this.ticksChargedTowardsShot = 0;
+        this.zapSound = new Audio("zap.mp3");
+        this.dieSound = new Audio("die.mp3");
     }
     shoot() {
         if (this.ticksChargedTowardsShot >= this.ticksToShoot) {
             this.ticksChargedTowardsShot = 0;
+            this.zapSound.play();
             switch (this.position) {
                 case "up":
                     new this.shotType(
@@ -494,13 +498,15 @@ class PlayerShip extends Ship {
         super(x, y, game, position);
         this.shotType = PlayerShot;
         this.colors = ["blue", "lightblue"];
-        this.ticksToShoot = 1;
+        this.ticksToShoot = 20;
         this.strategies.push(() => chargeShot(this));
     }
     destroy() {
         super.destroy();
+        this.game.gameOverSound.play();
         this.game.end();
     }
+    onCollide(thign) {}
 }
 class AlienShip extends Ship {
     constructor(x, y, game, position) {
@@ -514,16 +520,17 @@ class AlienShip extends Ship {
         this.strategies.push(() => chargeShot(this));
         this.strategies.push(() => shootPlayer(this));
         this.strategies.push(() => followTarget(this, this.target));
-        // this.strategies.push(() =>
-        //     selectNearestTargetFromArrayWeightedByPriority(
-        //         this,
-        //         this.game.player,
-        //         this.game.base
-        //     )
-        // );
+        this.strategies.push(() =>
+            selectNearestTargetFromArrayWeightedByPriority(
+                this,
+                this.game.player,
+                this.game.base
+            )
+        );
     }
     destroy() {
         super.destroy();
+        this.dieSound.play();
         game.score++;
     }
 }
@@ -557,6 +564,15 @@ class Rock extends Entity {
     constructor(x, y, game) {
         super(x, y, game);
         this.colors = ["maroon"];
+    }
+    destroy() {}
+    onCollide(thing) {
+        thing.back();
+        thing.back();
+        thing.back();
+        thing.back();
+        // if thing overlapped it might have claimed ponts incorrectly
+        this.claimPointsOnBoard();
     }
 }
 class Base extends Entity {
