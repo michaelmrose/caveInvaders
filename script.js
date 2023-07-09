@@ -94,7 +94,7 @@ class Game {
         this.loop = setInterval(() => {
             this.tick();
             this.render();
-        }, 10);
+        }, 33);
     }
     tick() {
         if (this.paused === false) {
@@ -110,11 +110,10 @@ class Game {
         }
     }
     scenario() {
-        this.player = new PlayerShip(3, 3, game, "up");
-        this.bar = new AlienShip(100, 90, game, "up");
-        this.zip = new PlayerShot(30, 28, game, "up");
-        this.zap = new AlienShot(15, 20, game, "up");
-        this.base = new Base(30, 30, game);
+        this.player = new PlayerShip(7, 7, game, "right");
+        this.player.face("right");
+        this.bar = new AlienShip(119, 90, game, "left");
+        this.base = new Base(3, 3, game);
         this.rockIt();
     }
     start() {
@@ -393,7 +392,11 @@ class Entity {
     checkForCollsion() {
         this.positions().forEach((p) => {
             let thingAtPosition = game.board[p.y][p.x];
-            if (thingAtPosition !== 0 && thingAtPosition !== this) {
+            if (
+                thingAtPosition !== 0 &&
+                thingAtPosition !== this &&
+                thingAtPosition.positions().includes({ x: p.x, y: p.y })
+            ) {
                 thingAtPosition.onCollide(this);
                 this.onCollide(thingAtPosition);
                 return true;
@@ -501,6 +504,9 @@ class PlayerShip extends Ship {
         this.ticksToShoot = 20;
         this.strategies.push(() => chargeShot(this));
     }
+    onCollide(thing) {
+        this.destroy();
+    }
     destroy() {
         super.destroy();
         this.game.gameOverSound.play();
@@ -543,6 +549,7 @@ class Shot extends Entity {
         });
     }
     onCollide(thing) {
+        thing.destroy();
         this.destroy();
     }
 }
@@ -611,6 +618,7 @@ class Base extends Entity {
     }
     destroy() {
         super.destroy();
+        this.game.gameOverSound.play();
         game.end();
     }
 }
