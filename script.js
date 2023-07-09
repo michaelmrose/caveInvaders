@@ -73,6 +73,7 @@ class Game {
             e.render();
         });
         this.renderScore();
+        this.renderPaused();
     }
     rockIt() {
         let top = range(this.width);
@@ -126,7 +127,9 @@ class Game {
     }
     pause() {
         if (this.paused) this.paused = false;
-        else this.paused = true;
+        else {
+            this.paused = true;
+        }
     }
     restart() {
         if (!game.ended) game.end();
@@ -138,6 +141,14 @@ class Game {
         this.ctx.fillStyle = "red";
         this.ctx.textAlign = "center";
         this.ctx.fillText(this.score, canvas.width - 30, 30);
+    }
+    renderPaused() {
+        if (this.paused === true) {
+            this.ctx.font = "150px Comic Sans MS";
+            this.ctx.fillStyle = "red";
+            this.ctx.textAlign = "center";
+            this.ctx.fillText("Paused", canvas.width / 2, canvas.height / 2);
+        }
     }
 }
 
