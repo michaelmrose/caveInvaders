@@ -125,6 +125,7 @@ class Entity {
         this.priorPositions = this.positions();
         this.checkForCollsion();
         this.claimPointsOnBoard();
+        this.strategies = [];
     }
 
     positionsUp() {
@@ -249,6 +250,9 @@ class Entity {
         ps.forEach((p) => (this.game.board[p.y][p.x] = 0));
         game.entities = game.entities.filter((e) => e !== this);
     }
+    onCollide(thing) {
+        this.destroy();
+    }
     checkForCollsion() {
         this.positions().forEach((p) => {
             let thingAtPosition = game.board[p.y][p.x];
@@ -279,7 +283,24 @@ class Ship extends Entity {
         super(x, y, game, position);
         this.shotType = AlienShot;
     }
-    // TODO for some reason shot is created with position = undefined which will prevent this from working when things are actually set in motion
+    shoot() {
+        // TODO for some reason shot is created with position = undefined which will prevent this from working when things are actually set in motion
+        switch (this.position) {
+            case "up":
+                new this.shotType(this.x, this.y - 2, this.game, this.position);
+                // new PlayerShot(this.x, this.y - 2, this.game, this.position);
+                break;
+            case "down":
+                new this.shotType(this.x, this.y + 2, this.game, this.position);
+                break;
+            case "left":
+                new this.shotType(this.x - 2, this.y, this.game, this.position);
+                break;
+            case "right":
+                new this.shotType(this.x + 2, this.y, this.game, this.position);
+                break;
+        }
+    }
     positionsUp() {
         return [
             { x: this.x, y: this.y, color: this.colors[0] },
@@ -311,40 +332,15 @@ class PlayerShip extends Ship {
         this.shotType = PlayerShot;
         this.colors = ["blue", "lightblue"];
     }
-
-    shoot() {
-        switch (this.position) {
-            case "up":
-                new this.shotType(this.x, this.y - 2, this.game, this.position);
-                // new PlayerShot(this.x, this.y - 2, this.game, this.position);
-                break;
-            case "down":
-                new this.shotType(this.x, this.y + 2, this.game, this.position);
-                break;
-            case "left":
-                new this.shotType(this.x - 2, this.y, this.game, this.position);
-                break;
-            case "right":
-                new this.shotType(this.x + 2, this.y, this.game, this.position);
-                break;
-        }
-    }
-    onCollide(thing) {
-        if (thing instanceof Base) {
-        } else if (thing instanceof Rock) {
-        } else {
-            this.destroy();
-            game.end();
-        }
+    destroy() {
+        super.destroy();
+        this.game.end();
     }
 }
 class AlienShip extends Ship {
     constructor(x, y, game, position) {
         super(x, y, game, position);
         this.colors = ["green", "lightgreen"];
-    }
-    onCollide(thing) {
-        this.destroy();
     }
 }
 
@@ -353,7 +349,6 @@ class Shot extends Entity {
         super(x, y, game, position);
         this.position = "up";
     }
-
     onCollide(thing) {
         this.destroy();
     }
@@ -376,15 +371,15 @@ class Rock extends Entity {
         super(x, y, game);
         this.colors = ["maroon"];
     }
-    onCollide(thing) {
-        console.log("back loser");
-        thing.back();
-        thing.back();
-        thing.back();
-        thing.back();
-        //intruder may have overridden board positions
-        this.claimPointsOnBoard();
-    }
+    // onCollide(thing) {
+    //     console.log("back loser");
+    //     thing.back();
+    //     thing.back();
+    //     thing.back();
+    //     thing.back();
+    //     //intruder may have overridden board positions
+    //     this.claimPointsOnBoard();
+    // }
 }
 class Base extends Entity {
     constructor(x, y, game) {
@@ -417,9 +412,8 @@ class Base extends Entity {
         return this.positionsUp();
     }
     onCollide(thing) {
-        if (thing instanceof AlienShip) this.destroy;
-        //TODO this logic doesn't work
-        if (thing instanceof Shot) thing.destroy;
+        if (thing instanceof AlienShip) this.destroy();
+        if (thing instanceof Shot) thing.destroy();
     }
     destroy() {
         super.destroy();
