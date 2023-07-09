@@ -142,17 +142,22 @@ class Game {
     }
     renderScore() {
         this.ctx.font = "20px Comic Sans MS";
-        this.ctx.fillStyle = "red";
-        this.ctx.textAlign = "center";
         this.ctx.fillText(this.score, canvas.width - 30, 30);
     }
     renderPaused() {
         if (this.paused === true) {
-            this.ctx.font = "150px Comic Sans MS";
-            this.ctx.fillStyle = "red";
-            this.ctx.textAlign = "center";
-            this.ctx.fillText("Paused", canvas.width / 2, canvas.height / 2);
+            this.printToScreen("Paused", 150);
         }
+    }
+    printToScreen(
+        text,
+        size,
+        x = this.canvas.width / 2,
+        y = this.canvas.height / 2
+    ) {
+        this.ctx.textAlign = "center";
+        this.ctx.font = `${size}px Comic Sans MS`;
+        this.ctx.fillText(text, x, y);
     }
     renderEnd() {
         this.ctx.font = "50px Comic Sans MS";
@@ -164,15 +169,12 @@ class Game {
         else if (this.score > 10) rating = "beginner";
         else if (this.score > 25) rating = "killer";
         else if (this.score > 100) rating = "master";
-        this.ctx.fillText(
-            `Score: ${this.score} `,
-            canvas.width / 2,
-            canvas.height / 2
-        );
-        this.ctx.fillText(
+        this.printToScreen(`Score: ${this.score} `, 50);
+        this.printToScreen(
             ` Rating: ${rating}`,
-            canvas.width / 2,
-            canvas.height / 2 + canvas.height * 0.1
+            50,
+            this.canvas.width / 2,
+            this.canvas.height / 2 + this.canvas.height * 0.1
         );
     }
 }
