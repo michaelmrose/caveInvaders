@@ -50,6 +50,7 @@ class Game {
         this.elementSize = this.canvas.width / this.width;
         this.canvas.height = this.elementSize * 96;
         this.ctx.fillStyle = "red";
+        this.score = 0;
     }
     clear() {
         this.ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -71,6 +72,7 @@ class Game {
         this.entities.forEach((e) => {
             e.render();
         });
+        this.renderScore();
     }
     rockIt() {
         let top = range(this.width);
@@ -130,6 +132,12 @@ class Game {
         if (!game.ended) game.end();
         game.scenario();
         game.start();
+    }
+    renderScore() {
+        this.ctx.font = "20px Comic Sans MS";
+        this.ctx.fillStyle = "red";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText(this.score, canvas.width - 30, 30);
     }
 }
 
@@ -485,6 +493,10 @@ class AlienShip extends Ship {
         //         this.game.base
         //     )
         // );
+    }
+    destroy() {
+        super.destroy();
+        game.score++;
     }
 }
 
