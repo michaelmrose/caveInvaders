@@ -242,21 +242,34 @@ class Entity {
     forward() {
         this.move(this.position);
     }
+    //This is a little dumb because move direction will change orientation meaning going back would
+    // without adjustment simply go back and forth in a singular small area
     back() {
         switch (this.position) {
             case "up":
                 this.move("down");
+                this.position = "up";
+                this.positions = this.positionsUp;
                 break;
             case "down":
                 this.move("up");
+                this.position = "down";
+                this.positions = this.positionsDown;
                 break;
             case "left":
                 this.move("right");
+                this.position = "left";
+                this.positions = this.positionsLeft;
                 break;
             case "right":
                 this.move("left");
+                this.position = "right";
+                this.positions = this.positionsRight;
                 break;
         }
+    }
+    moveAbsolute(direction) {
+        this.move(direction);
     }
     claimPointsOnBoard() {
         this.priorPositions.forEach((p) => {
@@ -354,12 +367,16 @@ class Ship extends Entity {
     constructor(x, y, game, position) {
         super(x, y, game, position);
         this.shotType = AlienShot;
-        this.ticksToShoot = 20;
+        this.ticksToShoot = 80;
         this.ticksChargedTowardsShot = 0;
     }
     shoot() {
-        if (this.ticksChargedTowardsShot >= this.ticksToShoot) {
+        if (
+            this.ticksChargedTowardsShot >= this.ticksToShoot &&
+            this.ticksTowardsRecognition >= this.ticksToRecognize
+        ) {
             this.ticksChargedTowardsShot = 0;
+            this.ticksTowardsRecognition = 0;
             switch (this.position) {
                 case "up":
                     new this.shotType(
@@ -395,6 +412,8 @@ class Ship extends Entity {
                     );
                     break;
             }
+        } else {
+            this.ticksTowardsRecognition++;
         }
     }
     positionsUp() {
@@ -427,7 +446,11 @@ class PlayerShip extends Ship {
         super(x, y, game, position);
         this.shotType = PlayerShot;
         this.colors = ["blue", "lightblue"];
+        this.ticksToShoot = 1;
         this.strategies.push(() => chargeShot(this));
+        //shoot lives in Ship superclass and this will be checked before shooting even though this has no meaning for players
+        this.ticksTowardsRecognition = 0;
+        this.ticksToRecognize = 0;
     }
     destroy() {
         super.destroy();
@@ -438,10 +461,23 @@ class AlienShip extends Ship {
     constructor(x, y, game, position) {
         super(x, y, game, position);
         this.colors = ["green", "lightgreen"];
+        this.ticksToShoot = 80;
         this.ticksToMove = 4;
+        //TODO consider setting this to a positive value to avoid doc holiday here shooting you instantly when you line up a shot
+        // and decay when you are not in line of sight
+        this.ticksToRecognize = 0; //delay to allow player to react before getting shot
+        this.ticksTowardsRecognition = 0;
+        this.target = undefined;
         this.strategies.push(() => chargeShot(this));
         this.strategies.push(() => shootPlayer(this));
-        this.strategies.push(() => followPlayer(this));
+        this.strategies.push(() => followTarget(this, this.target));
+        this.strategies.push(() =>
+            selectNearestTargetFromArrayWeightedByPriority(
+                this,
+                this.game.player,
+                this.game.base
+            )
+        );
     }
 }
 
@@ -467,6 +503,7 @@ class AlienShot extends Shot {
     constructor(x, y, game, position) {
         super(x, y, game, position);
         this.colors = ["yellow"];
+        this.ticksToMove = 1;
     }
 }
 class Rock extends Entity {
@@ -520,13 +557,25 @@ class Base extends Entity {
 function moveForward(e) {
     e.forward();
 }
-function followPlayer(e) {
-    let playerX = game.player.x;
-    let playerY = game.player.y;
-    if (e.y > playerY) e.move("up");
-    else if (e.y < playerY) e.move("down");
-    else if (e.x > playerX) e.move("left");
-    else if (e.x < playerX) e.move("right");
+function distanceBetween(a, b) {
+    return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+function selectNearestTargetFromArrayWeightedByPriority(e, player, base) {
+    // lets make this simple for starters we are just going to pick between player and base
+    let distanceToBase = distanceBetween(e, base);
+    let distanceToPlayer = distanceBetween(e, player);
+    if (distanceToPlayer < distanceToBase / 2) e.target = player;
+    else e.target = base;
+}
+function followTarget(e, target) {
+    if (typeof target !== "undefined") {
+        let playerX = target.x;
+        let playerY = target.y;
+        if (e.y > playerY) e.move("up");
+        else if (e.y < playerY) e.move("down");
+        else if (e.x > playerX) e.move("left");
+        else if (e.x < playerX) e.move("right");
+    }
 }
 
 function chargeShot(e) {
@@ -563,6 +612,18 @@ function handleKeys(evt) {
             game.player.actions.push(() => game.player.back());
             break;
         case "ArrowRight":
+            game.player.actions.push(() => game.player.rotateClockwise());
+            break;
+        case "w":
+            game.player.actions.push(() => game.player.forward());
+            break;
+        case "a":
+            game.player.actions.push(() => game.player.rotateCounter());
+            break;
+        case "s":
+            game.player.actions.push(() => game.player.back());
+            break;
+        case "d":
             game.player.actions.push(() => game.player.rotateClockwise());
             break;
         case "Escape":
