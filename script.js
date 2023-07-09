@@ -68,12 +68,14 @@ class Game {
         return p.x >= 0 && p.y >= 0 && p.x < this.width && p.y < this.height;
     }
     render() {
-        this.clear();
-        this.entities.forEach((e) => {
-            e.render();
-        });
-        this.renderScore();
-        this.renderPaused();
+        if (this.ended === false) {
+            this.clear();
+            this.entities.forEach((e) => {
+                e.render();
+            });
+            this.renderScore();
+            this.renderPaused();
+        } else this.renderEnd();
     }
     rockIt() {
         let top = range(this.width);
@@ -119,7 +121,7 @@ class Game {
         this.startLoop();
     }
     end() {
-        this.ended = false;
+        this.ended = true;
         clearInterval(this.loop);
         this.clear();
         this.entities = [];
@@ -149,6 +151,27 @@ class Game {
             this.ctx.textAlign = "center";
             this.ctx.fillText("Paused", canvas.width / 2, canvas.height / 2);
         }
+    }
+    renderEnd() {
+        this.ctx.font = "50px Comic Sans MS";
+        this.ctx.fillStyle = "red";
+        this.ctx.textAlign = "center";
+        let rating;
+        if (this.score === 0) rating = "zero";
+        else if (this.score > 0) rating = "loser";
+        else if (this.score > 10) rating = "beginner";
+        else if (this.score > 25) rating = "killer";
+        else if (this.score > 100) rating = "master";
+        this.ctx.fillText(
+            `Score: ${this.score} `,
+            canvas.width / 2,
+            canvas.height / 2
+        );
+        this.ctx.fillText(
+            ` Rating: ${rating}`,
+            canvas.width / 2,
+            canvas.height / 2 + canvas.height * 0.1
+        );
     }
 }
 
