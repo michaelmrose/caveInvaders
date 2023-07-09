@@ -468,16 +468,16 @@ class AlienShip extends Ship {
         this.ticksToRecognize = 0; //delay to allow player to react before getting shot
         this.ticksTowardsRecognition = 0;
         this.target = undefined;
-        this.strategies.push(() => chargeShot(this));
-        this.strategies.push(() => shootPlayer(this));
-        this.strategies.push(() => followTarget(this, this.target));
-        this.strategies.push(() =>
-            selectNearestTargetFromArrayWeightedByPriority(
-                this,
-                this.game.player,
-                this.game.base
-            )
-        );
+        // this.strategies.push(() => chargeShot(this));
+        // this.strategies.push(() => shootPlayer(this));
+        // this.strategies.push(() => followTarget(this, this.target));
+        // this.strategies.push(() =>
+        //     selectNearestTargetFromArrayWeightedByPriority(
+        //         this,
+        //         this.game.player,
+        //         this.game.base
+        //     )
+        // );
     }
 }
 
@@ -615,16 +615,16 @@ function handleKeys(evt) {
             game.player.actions.push(() => game.player.rotateClockwise());
             break;
         case "w":
-            game.player.actions.push(() => game.player.forward());
+            game.player.actions.push(() => game.player.move("up"));
             break;
         case "a":
-            game.player.actions.push(() => game.player.rotateCounter());
+            game.player.actions.push(() => game.player.move("left"));
             break;
         case "s":
-            game.player.actions.push(() => game.player.back());
+            game.player.actions.push(() => game.player.move("down"));
             break;
         case "d":
-            game.player.actions.push(() => game.player.rotateClockwise());
+            game.player.actions.push(() => game.player.move("right"));
             break;
         case "Escape":
             game.restart();
