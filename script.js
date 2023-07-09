@@ -78,19 +78,31 @@ class Game {
             new Rock(i, this.height - 1, this);
         }
         let sides = range(this.height);
-        for (let i = 0; i < sides.length; i++) {
+        for (let i = 1; i < sides.length - 1; i++) {
             new Rock(0, i, this);
             new Rock(this.width - 1, i, this);
         }
     }
     startLoop() {
         this.loop = setInterval(() => {
+            this.tick();
             this.render();
-        }, 33);
+        }, 10);
+    }
+    tick() {
+        this.entities.forEach((e) => {
+            e.strategies.forEach((s) => {
+                s(e);
+            });
+            e.actions.forEach((a) => {
+                a();
+            });
+            e.actions = [];
+        });
     }
     scenario() {
-        this.foo = new PlayerShip(3, 3, game, "up");
-        this.bar = new AlienShip(20, 24, game, "up");
+        this.player = new PlayerShip(3, 3, game, "up");
+        this.bar = new AlienShip(100, 90, game, "up");
         this.zip = new PlayerShot(30, 28, game, "up");
         this.zap = new AlienShot(15, 20, game, "up");
         this.base = new Base(30, 30, game);
@@ -113,11 +125,14 @@ class Game {
         game.start();
     }
 }
+
 class Entity {
     constructor(x, y, game, position) {
         this.x = x;
         this.y = y;
         this.game = game;
+        this.ticksTowardsMovement = 0;
+        this.ticksToMove = 1;
         game.entities.push(this);
         this.position = position;
         this.positions = this.positionsUp;
@@ -126,6 +141,7 @@ class Entity {
         this.checkForCollsion();
         this.claimPointsOnBoard();
         this.strategies = [];
+        this.actions = [];
     }
 
     positionsUp() {
@@ -139,6 +155,48 @@ class Entity {
     }
     positionsRight() {
         return [{ x: this.x, y: this.y, color: this.colors[0] }];
+    }
+    face(direction) {
+        this.position = direction;
+        switch (direction) {
+            case "up":
+                this.positions = this.positionsUp;
+                break;
+            case "down":
+                this.positions = this.positionsDown;
+                break;
+            case "left":
+                this.positions = this.positionsLeft;
+                break;
+            case "right":
+                this.positions = this.positionsRight;
+                break;
+        }
+    }
+    faceEntity(e) {
+        if (e.x === this.x) {
+            if (e.x > this.x) this.face("left");
+            if (e.x < this.x) this.face("right");
+        }
+        if (e.y === this.y) {
+            if (e.y > this.y) this.face("up");
+            if (e.y < this.y) this.face("down");
+        }
+    }
+    facingEntity(e) {
+        if (e.x === this.x) {
+            if (e.y > this.y && this.positions === this.positionsDown)
+                return true;
+            if (e.y < this.y && this.positions === this.positionsUp)
+                return true;
+        }
+        if (e.y === this.y) {
+            if (e.x > this.x && this.positions === this.positionsRight)
+                return true;
+            if (e.x < this.x && this.positions === this.positionsLeft)
+                return true;
+        }
+        return false;
     }
     render() {
         this.positions().forEach((p) => {
@@ -154,20 +212,32 @@ class Entity {
         this.changePositionOrReset((dir) => this._move(direction));
     }
     _move(direction) {
-        switch (direction) {
-            case "up":
-                this.y = this.y - 1;
-                break;
-            case "down":
-                this.y = this.y + 1;
-                break;
-            case "left":
-                this.x = this.x - 1;
-                break;
-            case "right":
-                this.x = this.x + 1;
-                break;
+        if (this.ticksTowardsMovement >= this.ticksToMove) {
+            switch (direction) {
+                case "up":
+                    this.position = direction;
+                    this.positions = this.positionsUp;
+                    this.y = this.y - 1;
+                    break;
+                case "down":
+                    this.position = direction;
+                    this.positions = this.positionsDown;
+                    this.y = this.y + 1;
+                    break;
+                case "left":
+                    this.position = direction;
+                    this.positions = this.positionsLeft;
+                    this.x = this.x - 1;
+                    break;
+                case "right":
+                    this.position = direction;
+                    this.positions = this.positionsRight;
+                    this.x = this.x + 1;
+                    break;
+            }
+            this.ticksTowardsMovement = 0;
         }
+        this.ticksTowardsMovement++;
     }
     forward() {
         this.move(this.position);
@@ -277,28 +347,54 @@ class Entity {
             this.y = priorY;
         }
     }
+
+    //=================================================================
 }
 class Ship extends Entity {
     constructor(x, y, game, position) {
         super(x, y, game, position);
         this.shotType = AlienShot;
+        this.ticksToShoot = 20;
+        this.ticksChargedTowardsShot = 0;
     }
     shoot() {
-        // TODO for some reason shot is created with position = undefined which will prevent this from working when things are actually set in motion
-        switch (this.position) {
-            case "up":
-                new this.shotType(this.x, this.y - 2, this.game, this.position);
-                // new PlayerShot(this.x, this.y - 2, this.game, this.position);
-                break;
-            case "down":
-                new this.shotType(this.x, this.y + 2, this.game, this.position);
-                break;
-            case "left":
-                new this.shotType(this.x - 2, this.y, this.game, this.position);
-                break;
-            case "right":
-                new this.shotType(this.x + 2, this.y, this.game, this.position);
-                break;
+        if (this.ticksChargedTowardsShot >= this.ticksToShoot) {
+            this.ticksChargedTowardsShot = 0;
+            switch (this.position) {
+                case "up":
+                    new this.shotType(
+                        this.x,
+                        this.y - 2,
+                        this.game,
+                        this.position
+                    );
+                    // new PlayerShot(this.x, this.y - 2, this.game, this.position);
+                    break;
+                case "down":
+                    new this.shotType(
+                        this.x,
+                        this.y + 2,
+                        this.game,
+                        this.position
+                    );
+                    break;
+                case "left":
+                    new this.shotType(
+                        this.x - 2,
+                        this.y,
+                        this.game,
+                        this.position
+                    );
+                    break;
+                case "right":
+                    new this.shotType(
+                        this.x + 2,
+                        this.y,
+                        this.game,
+                        this.position
+                    );
+                    break;
+            }
         }
     }
     positionsUp() {
@@ -331,6 +427,7 @@ class PlayerShip extends Ship {
         super(x, y, game, position);
         this.shotType = PlayerShot;
         this.colors = ["blue", "lightblue"];
+        this.strategies.push(() => chargeShot(this));
     }
     destroy() {
         super.destroy();
@@ -341,13 +438,19 @@ class AlienShip extends Ship {
     constructor(x, y, game, position) {
         super(x, y, game, position);
         this.colors = ["green", "lightgreen"];
+        this.ticksToMove = 4;
+        this.strategies.push(() => chargeShot(this));
+        this.strategies.push(() => shootPlayer(this));
+        this.strategies.push(() => followPlayer(this));
     }
 }
 
 class Shot extends Entity {
     constructor(x, y, game, position) {
         super(x, y, game, position);
-        this.position = "up";
+        this.strategies.push(() => {
+            moveForward(this);
+        });
     }
     onCollide(thing) {
         this.destroy();
@@ -356,7 +459,7 @@ class Shot extends Entity {
 
 class PlayerShot extends Shot {
     constructor(x, y, game, position) {
-        super(x, y, game), position;
+        super(x, y, game, position);
         this.colors = ["red"];
     }
 }
@@ -371,15 +474,6 @@ class Rock extends Entity {
         super(x, y, game);
         this.colors = ["maroon"];
     }
-    // onCollide(thing) {
-    //     console.log("back loser");
-    //     thing.back();
-    //     thing.back();
-    //     thing.back();
-    //     thing.back();
-    //     //intruder may have overridden board positions
-    //     this.claimPointsOnBoard();
-    // }
 }
 class Base extends Entity {
     constructor(x, y, game) {
@@ -420,6 +514,32 @@ class Base extends Entity {
         game.end();
     }
 }
+//=========================================================================
+// Strategies
+//=========================================================================
+function moveForward(e) {
+    e.forward();
+}
+function followPlayer(e) {
+    let playerX = game.player.x;
+    let playerY = game.player.y;
+    if (e.y > playerY) e.move("up");
+    else if (e.y < playerY) e.move("down");
+    else if (e.x > playerX) e.move("left");
+    else if (e.x < playerX) e.move("right");
+}
+
+function chargeShot(e) {
+    e.ticksChargedTowardsShot += 1;
+}
+function shootPlayer(e) {
+    let playerX = game.player.x;
+    let playerY = game.player.y;
+    if (playerX === e.x || playerY === e.y) {
+        e.faceEntity(game.player);
+        if (e.facingEntity(game.player)) e.shoot();
+    }
+}
 
 //=======================================================================
 // Setup
@@ -433,41 +553,23 @@ game.start();
 
 function handleKeys(evt) {
     switch (evt.key) {
-        case "w":
-            game.foo.forward();
-            break;
-        case "a":
-            game.foo.move("left");
-            break;
-        case "d":
-            game.foo.move("right");
-            break;
-        case "q":
-            game.foo.rotateCounter();
-            break;
-        case "s":
-            game.foo.back();
-            break;
-        case "e":
-            game.foo.rotateClockwise();
-            break;
         case "ArrowUp":
-            game.foo.forward();
+            game.player.actions.push(() => game.player.forward());
             break;
         case "ArrowLeft":
-            game.foo.rotateCounter();
+            game.player.actions.push(() => game.player.rotateCounter());
             break;
         case "ArrowDown":
-            game.foo.back();
+            game.player.actions.push(() => game.player.back());
             break;
         case "ArrowRight":
-            game.foo.rotateClockwise();
+            game.player.actions.push(() => game.player.rotateClockwise());
             break;
         case "Escape":
             game.restart();
             break;
         case " ":
-            game.foo.shoot();
+            game.player.actions.push(() => game.player.shoot());
         default:
             console.log(evt.key);
     }
