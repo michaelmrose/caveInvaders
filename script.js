@@ -38,6 +38,7 @@ class Game {
         this.board = [];
         this.row = [];
         this.ended = false;
+        this.paused = false;
         for (let i = 0; i < this.width; i++) {
             this.row.push(0);
         }
@@ -90,15 +91,17 @@ class Game {
         }, 10);
     }
     tick() {
-        this.entities.forEach((e) => {
-            e.strategies.forEach((s) => {
-                s(e);
+        if (this.paused === false) {
+            this.entities.forEach((e) => {
+                e.strategies.forEach((s) => {
+                    s(e);
+                });
+                e.actions.forEach((a) => {
+                    a();
+                });
+                e.actions = [];
             });
-            e.actions.forEach((a) => {
-                a();
-            });
-            e.actions = [];
-        });
+        }
     }
     scenario() {
         this.player = new PlayerShip(3, 3, game, "up");
@@ -118,6 +121,10 @@ class Game {
         this.clear();
         this.entities = [];
         this.board = structuredClone(this.emptyBoard);
+    }
+    pause() {
+        if (this.paused) this.paused = false;
+        else this.paused = true;
     }
     restart() {
         if (!game.ended) game.end();
@@ -600,7 +607,13 @@ let game = new Game(canvas);
 game.scenario();
 game.start();
 
+// Logic at the start is a little tortued. We don't want to process key presses while paused but we DO want to process p to unpause
 function handleKeys(evt) {
+    if (game.paused)
+        if (evt.key === "p") {
+            game.pause();
+            return true;
+        } else return true;
     switch (evt.key) {
         case "ArrowUp":
             game.player.actions.push(() => game.player.forward());
@@ -625,6 +638,9 @@ function handleKeys(evt) {
             break;
         case "d":
             game.player.actions.push(() => game.player.move("right"));
+            break;
+        case "p":
+            game.pause();
             break;
         case "Escape":
             game.restart();
