@@ -422,14 +422,8 @@ class Ship extends Entity {
         this.ticksChargedTowardsShot = 0;
     }
     shoot() {
-        if (
-            this.ticksChargedTowardsShot >= this.ticksToShoot &&
-            this.ticksTowardsRecognition >= this.ticksToRecognize &&
-            this.attemptsTowardsFireDelay >= this.fireDelay
-        ) {
+        if (this.ticksChargedTowardsShot >= this.ticksToShoot) {
             this.ticksChargedTowardsShot = 0;
-            this.ticksTowardsRecognition = 0;
-            this.attemptsTowardsFireDelay = 0;
             switch (this.position) {
                 case "up":
                     new this.shotType(
@@ -466,8 +460,6 @@ class Ship extends Entity {
                     break;
             }
         } else {
-            this.ticksTowardsRecognition++;
-            this.attemptsTowardsFireDelay++;
         }
     }
     positionsUp() {
@@ -502,11 +494,6 @@ class PlayerShip extends Ship {
         this.colors = ["blue", "lightblue"];
         this.ticksToShoot = 1;
         this.strategies.push(() => chargeShot(this));
-        //shoot lives in Ship superclass and this will be checked before shooting even though this has no meaning for players
-        this.ticksTowardsRecognition = 0;
-        this.ticksToRecognize = 0;
-        this.fireDelay = 0;
-        this.attemptsTowardsFireDelay = 0;
     }
     destroy() {
         super.destroy();
@@ -521,10 +508,6 @@ class AlienShip extends Ship {
         this.ticksToMove = 4;
         //TODO consider setting this to a positive value to avoid doc holiday here shooting you instantly when you line up a shot
         // and decay when you are not in line of sight
-        this.ticksToRecognize = 0; //delay to allow player to react before getting shot
-        this.ticksTowardsRecognition = 0;
-        this.fireDelay = 30;
-        this.attemptsTowardsFireDelay = 0;
         this.target = undefined;
         this.strategies.push(() => chargeShot(this));
         this.strategies.push(() => shootPlayer(this));
