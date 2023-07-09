@@ -125,6 +125,8 @@ class Game {
         clearInterval(this.loop);
         this.clear();
         this.entities = [];
+        this.paused = false;
+        this.score = 0;
         this.board = structuredClone(this.emptyBoard);
     }
     pause() {
@@ -134,7 +136,7 @@ class Game {
         }
     }
     restart() {
-        if (!game.ended) game.end();
+        game.end();
         game.scenario();
         game.start();
     }
@@ -422,10 +424,12 @@ class Ship extends Entity {
     shoot() {
         if (
             this.ticksChargedTowardsShot >= this.ticksToShoot &&
-            this.ticksTowardsRecognition >= this.ticksToRecognize
+            this.ticksTowardsRecognition >= this.ticksToRecognize &&
+            this.attemptsTowardsFireDelay >= this.fireDelay
         ) {
             this.ticksChargedTowardsShot = 0;
             this.ticksTowardsRecognition = 0;
+            this.attemptsTowardsFireDelay = 0;
             switch (this.position) {
                 case "up":
                     new this.shotType(
@@ -463,6 +467,7 @@ class Ship extends Entity {
             }
         } else {
             this.ticksTowardsRecognition++;
+            this.attemptsTowardsFireDelay++;
         }
     }
     positionsUp() {
@@ -500,6 +505,8 @@ class PlayerShip extends Ship {
         //shoot lives in Ship superclass and this will be checked before shooting even though this has no meaning for players
         this.ticksTowardsRecognition = 0;
         this.ticksToRecognize = 0;
+        this.fireDelay = 0;
+        this.attemptsTowardsFireDelay = 0;
     }
     destroy() {
         super.destroy();
@@ -516,10 +523,12 @@ class AlienShip extends Ship {
         // and decay when you are not in line of sight
         this.ticksToRecognize = 0; //delay to allow player to react before getting shot
         this.ticksTowardsRecognition = 0;
+        this.fireDelay = 30;
+        this.attemptsTowardsFireDelay = 0;
         this.target = undefined;
-        // this.strategies.push(() => chargeShot(this));
-        // this.strategies.push(() => shootPlayer(this));
-        // this.strategies.push(() => followTarget(this, this.target));
+        this.strategies.push(() => chargeShot(this));
+        this.strategies.push(() => shootPlayer(this));
+        this.strategies.push(() => followTarget(this, this.target));
         // this.strategies.push(() =>
         //     selectNearestTargetFromArrayWeightedByPriority(
         //         this,
