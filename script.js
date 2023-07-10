@@ -34,12 +34,18 @@ class Game {
         this.canvas.setAttribute("width", getComputedStyle(canvas)["width"]);
         this.entities = [];
         this.graveyard = [];
+        this.buried = [];
         this.width = 128;
         this.height = 96;
         this.board = [];
         this.row = [];
         this.ended = false;
         this.paused = false;
+        this.enemiesToSpawn = 1;
+        //used to take an action every nth tick
+        this.nthTick = 0;
+        //In this many ticks we will generate another enemy and decrease this value leading to faster spawns
+        this.ticksToGenerateEnemies = 300;
         for (let i = 0; i < this.width; i++) {
             this.row.push(0);
         }
@@ -75,20 +81,23 @@ class Game {
             this.entities.forEach((e) => {
                 e.render();
             });
+            this.ctx.fillStyle = "red";
             this.renderScore();
+            this.ctx.fillStyle = "red";
             this.renderPaused();
+            this.ctx.fillStyle = "red";
         } else this.renderEnd();
     }
     rockIt() {
         let top = range(this.width);
         for (let i = 0; i < top.length; i++) {
-            new Rock(i, 0, this);
-            new Rock(i, this.height - 1, this);
+            new InvulnerableRock(i, 0, this);
+            new InvulnerableRock(i, this.height - 1, this);
         }
         let sides = range(this.height);
         for (let i = 1; i < sides.length - 1; i++) {
-            new Rock(0, i, this);
-            new Rock(this.width - 1, i, this);
+            new InvulnerableRock(0, i, this);
+            new InvulnerableRock(this.width - 1, i, this);
         }
     }
     startLoop() {
@@ -100,10 +109,19 @@ class Game {
     tick() {
         if (this.paused === false) {
             //clear the positions occupied by destroyed entities
+            //a second tier "buried" shouldn't be needed added to avoid
+            //double counting aliens for score should be fixed by just not
+            //doing that in the future
             this.graveyard.forEach((e) => {
+                if (e instanceof AlienShip && !this.buried.includes(e)) {
+                    this.score++;
+                    this.buried.push(e);
+                }
                 e.positions().forEach((p) => (this.board[p.y][p.x] = 0));
             });
             this.graveyard = [];
+            this.buried = [];
+            this.generateEnemies();
             this.entities.forEach((e) => {
                 e.strategies.forEach((s) => {
                     s(e);
@@ -115,21 +133,40 @@ class Game {
             });
         }
     }
-
+    randomPositionWithinBoard() {
+        let x = rand(30, this.width - 1);
+        let y = rand(30, this.height - 1);
+        return [x, y];
+    }
+    randomUnoccupiedPositionWithinBoard() {
+        while (true) {
+            let r = this.randomPositionWithinBoard();
+            if (game.board[r.y][r.x] === 0) return r;
+        }
+    }
+    generateEnemies() {
+        this.nthTick++;
+        if (this.nthTick % this.ticksToGenerateEnemies === 0) {
+            for (let i = 0; i < this.enemiesToSpawn; i++)
+                new AlienShip(...this.randomPositionWithinBoard(), this, "up");
+            this.ticksToGenerateEnemies = Math.max(
+                10,
+                this.ticksToGenerateEnemies - 1
+            );
+            this.enemiesToSpawn = Math.min(this.enemiesToSpawn + 1, 8);
+        }
+    }
     scenario() {
-        this.player = new PlayerShip(7, 7, game, "right");
+        this.player = new PlayerShip(7, 7, this, "right");
         this.player.face("right");
-        this.bar = new AlienShip(this.width - 3, this.height - 3, game, "left");
-        this.base = new Base(3, 3, game);
-        new AlienShip(...randomPositionWithinBoard(), game, "up");
-        new AlienShip(...randomPositionWithinBoard(), game, "up");
-        new AlienShip(...randomPositionWithinBoard(), game, "up");
-        new AlienShip(...randomPositionWithinBoard(), game, "up");
-        new AlienShip(...randomPositionWithinBoard(), game, "up");
-        new AlienShip(...randomPositionWithinBoard(), game, "up");
+        this.base = new Base(3, 3, this);
+        for (let i = 0; i < 6; i++) {
+            new AlienShip(...this.randomPositionWithinBoard(), this, "up");
+        }
         this.rockIt();
     }
     start() {
+        this.score = 0;
         this.ended = false;
         this.startLoop();
     }
@@ -139,7 +176,6 @@ class Game {
         this.clear();
         this.entities = [];
         this.paused = false;
-        this.score = 0;
         this.board = structuredClone(this.emptyBoard);
     }
     pause() {
@@ -395,7 +431,6 @@ class Entity {
     }
     // TODO there should be a better way than filtering the whole list access via ID?
     destroy() {
-        console.log("destruction");
         let ps = this.positions();
         game.entities = game.entities.filter((e) => e !== this);
         this.onDestroy();
@@ -403,7 +438,6 @@ class Entity {
     }
     onDestroy() {}
     onCollide(thing) {
-        console.log("collision");
         this.destroy();
     }
     checkForCollsion() {
@@ -549,7 +583,6 @@ class AlienShip extends Ship {
     }
     onDestroy() {
         this.dieSound.play();
-        game.score++;
     }
 }
 
@@ -577,6 +610,12 @@ class AlienShot extends Shot {
     }
 }
 class Rock extends Entity {
+    constructor(x, y, game) {
+        super(x, y, game);
+        this.colors = ["brown"];
+    }
+}
+class InvulnerableRock extends Entity {
     constructor(x, y, game) {
         super(x, y, game);
         this.colors = ["maroon"];
@@ -733,11 +772,6 @@ function rand(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-function randomPositionWithinBoard() {
-    let x = rand(0, game.width);
-    let y = rand(0, game.height);
-    return [x, y];
 }
 
 //derived in part from https://stackoverflow.com/questions/3895478/does-javascript-have-a-method-like-range-to-generate-a-range-within-the-supp
