@@ -116,50 +116,17 @@ class Game {
         }
     }
 
-    // tick() {
-    //     if (this.paused === false) {
-    //         for (let i = 0; i < this.entities.length; i++) {
-    //             for (let j = 0; j < this.entities[i].strategies.length; j++) {
-    //                 this.entities[i].strategies[j]();
-    //             }
-    //         }
-    //         for (let i = 0; i < this.entities.length; i++) {
-    //             for (let j = 0; j < this.entities[i].actions.length; j++) {
-    //                 this.entities[i].actions[j]();
-    //             }
-    //         }
-    //     }
-    // }
-    // tick() {
-    //     if (!this.paused) {
-    //         const entitiesLength = this.entities.length;
-    //         for (let i = 0; i < entitiesLength; i++) {
-    //             const entity = this.entities[i];
-
-    //             const strategies = entity.strategies;
-    //             const strategiesLength = strategies.length;
-    //             for (let j = 0; j < strategiesLength; j++) {
-    //                 const strategy = strategies[j];
-    //                 strategy(entity);
-    //             }
-
-    //             const actions = entity.actions;
-    //             const actionsLength = actions.length;
-    //             for (let k = 0; k < actionsLength; k++) {
-    //                 const action = actions[k];
-    //                 action();
-    //             }
-
-    //             entity.actions = [];
-    //         }
-    //     }
-    // }
-
     scenario() {
         this.player = new PlayerShip(7, 7, game, "right");
         this.player.face("right");
         this.bar = new AlienShip(this.width - 3, this.height - 3, game, "left");
         this.base = new Base(3, 3, game);
+        new AlienShip(...randomPositionWithinBoard(), game, "up");
+        new AlienShip(...randomPositionWithinBoard(), game, "up");
+        new AlienShip(...randomPositionWithinBoard(), game, "up");
+        new AlienShip(...randomPositionWithinBoard(), game, "up");
+        new AlienShip(...randomPositionWithinBoard(), game, "up");
+        new AlienShip(...randomPositionWithinBoard(), game, "up");
         this.rockIt();
     }
     start() {
@@ -200,9 +167,9 @@ class Game {
         x = this.canvas.width / 2,
         y = this.canvas.height / 2
     ) {
-        this.fillStyle = "red";
         this.ctx.textAlign = "center";
         this.ctx.font = `${size}px Comic Sans MS`;
+        this.fillStyle = "red";
         this.ctx.fillText(text, x, y);
     }
     renderEnd() {
@@ -770,7 +737,7 @@ function rand(min, max) {
 function randomPositionWithinBoard() {
     let x = rand(0, game.width);
     let y = rand(0, game.height);
-    return game.board[y][x];
+    return [x, y];
 }
 
 //derived in part from https://stackoverflow.com/questions/3895478/does-javascript-have-a-method-like-range-to-generate-a-range-within-the-supp
