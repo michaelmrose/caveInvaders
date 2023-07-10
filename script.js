@@ -452,7 +452,6 @@ class Entity {
     }
     // TODO there should be a better way than filtering the whole list access via ID?
     destroy() {
-        let ps = this.positions();
         game.entities = game.entities.filter((e) => e !== this);
         this.onDestroy();
         this.game.graveyard.push(this);
