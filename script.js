@@ -33,6 +33,7 @@ class Game {
         this.canvas.setAttribute("height", getComputedStyle(canvas)["height"]);
         this.canvas.setAttribute("width", getComputedStyle(canvas)["width"]);
         this.entities = [];
+        this.graveyard = [];
         this.width = 128;
         this.height = 96;
         this.board = [];
@@ -98,6 +99,11 @@ class Game {
     }
     tick() {
         if (this.paused === false) {
+            //clear the positions occupied by destroyed entities
+            this.graveyard.forEach((e) => {
+                e.positions().forEach((p) => (this.board[p.y][p.x] = 0));
+            });
+            this.graveyard = [];
             this.entities.forEach((e) => {
                 e.strategies.forEach((s) => {
                     s(e);
@@ -109,10 +115,50 @@ class Game {
             });
         }
     }
+
+    // tick() {
+    //     if (this.paused === false) {
+    //         for (let i = 0; i < this.entities.length; i++) {
+    //             for (let j = 0; j < this.entities[i].strategies.length; j++) {
+    //                 this.entities[i].strategies[j]();
+    //             }
+    //         }
+    //         for (let i = 0; i < this.entities.length; i++) {
+    //             for (let j = 0; j < this.entities[i].actions.length; j++) {
+    //                 this.entities[i].actions[j]();
+    //             }
+    //         }
+    //     }
+    // }
+    // tick() {
+    //     if (!this.paused) {
+    //         const entitiesLength = this.entities.length;
+    //         for (let i = 0; i < entitiesLength; i++) {
+    //             const entity = this.entities[i];
+
+    //             const strategies = entity.strategies;
+    //             const strategiesLength = strategies.length;
+    //             for (let j = 0; j < strategiesLength; j++) {
+    //                 const strategy = strategies[j];
+    //                 strategy(entity);
+    //             }
+
+    //             const actions = entity.actions;
+    //             const actionsLength = actions.length;
+    //             for (let k = 0; k < actionsLength; k++) {
+    //                 const action = actions[k];
+    //                 action();
+    //             }
+
+    //             entity.actions = [];
+    //         }
+    //     }
+    // }
+
     scenario() {
         this.player = new PlayerShip(7, 7, game, "right");
         this.player.face("right");
-        this.bar = new AlienShip(119, 90, game, "left");
+        this.bar = new AlienShip(this.width - 3, this.height - 3, game, "left");
         this.base = new Base(3, 3, game);
         this.rockIt();
     }
@@ -382,17 +428,16 @@ class Entity {
     }
     // TODO there should be a better way than filtering the whole list access via ID?
     destroy() {
+        console.log("destruction");
         let ps = this.positions();
-        ps.forEach((p) => (this.game.board[p.y][p.x] = 0));
         game.entities = game.entities.filter((e) => e !== this);
         this.onDestroy();
+        this.game.graveyard.push(this);
     }
     onDestroy() {}
     onCollide(thing) {
+        console.log("collision");
         this.destroy();
-    }
-    positionValidForThing(thing, x, y) {
-        return thing.positions().includes({ x: x, y: y, color: "blue" });
     }
     checkForCollsion() {
         this.positions().forEach((p) => {
@@ -448,7 +493,6 @@ class Ship extends Entity {
                         this.game,
                         this.position
                     );
-                    // new PlayerShot(this.x, this.y - 2, this.game, this.position);
                     break;
                 case "down":
                     new this.shotType(
@@ -508,17 +552,13 @@ class PlayerShip extends Ship {
         super(x, y, game, position);
         this.shotType = PlayerShot;
         this.colors = ["blue", "lightblue"];
-        this.ticksToShoot = 80;
+        this.ticksToShoot = 20;
         this.strategies.push(() => chargeShot(this));
-    }
-    onCollide(thing) {
-        this.destroy();
     }
     onDestroy() {
         this.game.gameOverSound.play();
         this.game.end();
     }
-    onCollide(thing) {}
 }
 class AlienShip extends Ship {
     constructor(x, y, game, position) {
@@ -552,10 +592,6 @@ class Shot extends Entity {
         this.strategies.push(() => {
             moveForward(this);
         });
-    }
-    onCollide(thing) {
-        thing.destroy();
-        this.destroy();
     }
 }
 
@@ -597,16 +633,16 @@ class Base extends Entity {
     positionsUp() {
         return [
             { x: this.x, y: this.y, color: this.colors[0] },
+            { x: this.x - 1, y: this.y, color: this.colors[0] },
             { x: this.x + 1, y: this.y, color: this.colors[0] },
-            { x: this.x + 2, y: this.y, color: this.colors[0] },
+
+            { x: this.x, y: this.y - 1, color: this.colors[0] },
+            { x: this.x - 1, y: this.y - 1, color: this.colors[0] },
+            { x: this.x + 1, y: this.y - 1, color: this.colors[0] },
 
             { x: this.x, y: this.y + 1, color: this.colors[0] },
+            { x: this.x - 1, y: this.y + 1, color: this.colors[0] },
             { x: this.x + 1, y: this.y + 1, color: this.colors[0] },
-            { x: this.x + 2, y: this.y + 1, color: this.colors[0] },
-
-            { x: this.x, y: this.y + 2, color: this.colors[0] },
-            { x: this.x + 1, y: this.y + 2, color: this.colors[0] },
-            { x: this.x + 2, y: this.y + 2, color: this.colors[0] },
         ];
     }
     positionsDown() {
@@ -620,7 +656,6 @@ class Base extends Entity {
     }
     onCollide(thing) {
         if (thing instanceof AlienShip) this.destroy();
-        if (thing instanceof Shot) thing.destroy();
     }
     onDestroy() {
         this.game.gameOverSound.play();
@@ -726,7 +761,6 @@ document.addEventListener("keydown", handleKeys.bind(this));
 //=======================================================================
 // Misc
 //=======================================================================
-
 // derived from class discussion
 function rand(min, max) {
     min = Math.ceil(min);
@@ -734,8 +768,8 @@ function rand(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 function randomPositionWithinBoard() {
-    let x = rand(0, 59);
-    let y = rand(0, 48);
+    let x = rand(0, game.width);
+    let y = rand(0, game.height);
     return game.board[y][x];
 }
 
