@@ -134,21 +134,32 @@ class Game {
         }
     }
     randomPositionWithinBoard() {
-        let x = rand(30, this.width - 1);
-        let y = rand(30, this.height - 1);
+        let x = rand(3, this.width - 3);
+        let y = rand(3, this.height - 3);
         return [x, y];
     }
     randomUnoccupiedPositionWithinBoard() {
         while (true) {
             let r = this.randomPositionWithinBoard();
-            if (game.board[r.y][r.x] === 0) return r;
+            let x = r[0];
+            let y = r[1];
+            let xRange = range(3, 21).concat(this.width - 20, this.width - 2);
+            let yRange = range(3, 21).concat(this.height - 20, this.height - 2);
+            if (xRange.includes(x) || yRange.includes(y)) {
+                console.log(`r:${r} `);
+                return r;
+            }
         }
     }
     generateEnemies() {
         this.nthTick++;
         if (this.nthTick % this.ticksToGenerateEnemies === 0) {
             for (let i = 0; i < this.enemiesToSpawn; i++)
-                new AlienShip(...this.randomPositionWithinBoard(), this, "up");
+                new AlienShip(
+                    ...this.randomUnoccupiedPositionWithinBoard(),
+                    this,
+                    "up"
+                );
             this.ticksToGenerateEnemies = Math.max(
                 10,
                 this.ticksToGenerateEnemies - 1
@@ -157,11 +168,21 @@ class Game {
         }
     }
     scenario() {
-        this.player = new PlayerShip(7, 7, this, "right");
+        this.player = new PlayerShip(
+            this.width / 2 + 5,
+            this.height / 2 + 5,
+            this,
+            "up"
+        );
         this.player.face("right");
-        this.base = new Base(3, 3, this);
-        for (let i = 0; i < 6; i++) {
-            new AlienShip(...this.randomPositionWithinBoard(), this, "up");
+        this.base = new Base(this.width / 2, this.height / 2, this, "up");
+
+        for (let i = 0; i < 3; i++) {
+            new AlienShip(
+                ...this.randomUnoccupiedPositionWithinBoard(),
+                this,
+                "up"
+            );
         }
         this.rockIt();
     }
@@ -214,10 +235,10 @@ class Game {
         this.ctx.textAlign = "center";
         let rating;
         if (this.score === 0) rating = "zero";
-        else if (this.score > 0) rating = "loser";
-        else if (this.score > 10) rating = "beginner";
-        else if (this.score > 25) rating = "killer";
         else if (this.score > 100) rating = "master";
+        else if (this.score > 25) rating = "killer";
+        else if (this.score > 10) rating = "beginner";
+        else if (this.score > 0) rating = "loser";
         this.printToScreen(`Score: ${this.score} `, 50);
         this.printToScreen(
             ` Rating: ${rating}`,
@@ -553,7 +574,7 @@ class PlayerShip extends Ship {
         super(x, y, game, position);
         this.shotType = PlayerShot;
         this.colors = ["blue", "lightblue"];
-        this.ticksToShoot = 20;
+        this.ticksToShoot = 5;
         this.strategies.push(() => chargeShot(this));
     }
     onDestroy() {
@@ -566,7 +587,7 @@ class AlienShip extends Ship {
         super(x, y, game, position);
         this.colors = ["green", "lightgreen"];
         this.ticksToShoot = 80;
-        this.ticksToMove = 4;
+        this.ticksToMove = 7;
         //TODO consider setting this to a positive value to avoid doc holiday here shooting you instantly when you line up a shot
         // and decay when you are not in line of sight
         this.target = undefined;
