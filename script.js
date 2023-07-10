@@ -628,6 +628,10 @@ class AlienShot extends Shot {
         this.colors = ["yellow"];
         this.ticksToMove = 1;
     }
+    onCollide(thing) {
+        if (thing instanceof AlienShip) {
+        } else this.destroy();
+    }
 }
 class Rock extends Entity {
     constructor(x, y, game) {
