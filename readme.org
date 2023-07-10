@@ -1,5 +1,6 @@
 #+title: Cave Invaders
 * MVP
+Play the MVP at www.caveinvaders.com or  on [[Github Pages][https://michaelmrose.github.io/caveInvaders/]]
 ** Tech to be used
 - JavaScript
 - CSS
@@ -11,44 +12,36 @@ Riffing off "Space Invaders" a simple game made of incredibly simple pixel graph
 ** Mechanics
 Aliens proceed directly towards base.
 
-The players weapon is much faster than the alien
+The players weapon fires much faster than the alien
 
 If the player comes within a certain number of spaces of the alien it will fire its weapon at the player. If another alien in the way it wont fire. 
 
 The player earns point for each alien destroyed until the aliens destroy the base.
 
-The internal tick of the game clock is bounded by the time taken for the fastest item to travel one square for simplicity of collision detection.
+The internal tick of the game clock is 1/30th of a second with different actions taking different number of ticks to actuate tuned to make the game difficult but feasible.
+In order to make it possible to handle many alies they both move slower and take longer to recharge their weapon
 
-*** Speeds
-- Player movement 1 sq every 3 ticks  33
-- Alien  movement 1 sq every 2 ticks 50
-- Player shot 1 sq per 1 tick 100
-- Alien shot 1 sq per 2 ticks 50
-- Time to recharge alien shot 9 ticks 9
-- Time to recharge player shot 3 ticks 33
-
-  Overall clock set that players move around 1 sq per 1 second
 
 ** Representation
 At game beginning a pixel art screen is shown with instructions. Last of which is press space to start.
 Incredibly simple units are represented by a singular block on the map of different colors.
 Empty Space: Black
-Rock: Brown
+Rock: Brown/Maroon
 Player: Blue
 Base: Gold
 Alien: Dark Green
-Alien Shot: Bright Green
-Player Shot: Yellow
-Destroyed Rock: Red
+Alien Shot: Yellow
+Player Shot: Red
 [[screenshot][screenshot.png]]   
-4px is one block
-visible screen is approx 50blocks by 50 blocks
-At Game End the screen flashes white and shows a pixel art end screen with an ugly alien and your score.
+visible screen is approx 198x196 blocks with each block taking an equal portion of the screen.
+At Game End the screen flashes white and shows a score and rating based on number of aliens slain.
 
 ** Controls
-Directional keys: Move that direction at the speed provided
-Shift + directional keys point ship in that direction
+WASD: Move that direction at the speed provided
+Arrows: Left/Right Rotates and Up/Down go forward and backward
 space fire weapon
+P Pause
+Escape Reset
 
 ** Risks/Roadblocks
 - Game turns out to be too complicated to implement within time-frame
