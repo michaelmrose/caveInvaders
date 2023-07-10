@@ -510,7 +510,7 @@ class Ship extends Entity {
                 case "up":
                     new this.shotType(
                         this.x,
-                        this.y - 2,
+                        this.y - 3,
                         this.game,
                         this.position
                     );
@@ -518,14 +518,14 @@ class Ship extends Entity {
                 case "down":
                     new this.shotType(
                         this.x,
-                        this.y + 2,
+                        this.y + 3,
                         this.game,
                         this.position
                     );
                     break;
                 case "left":
                     new this.shotType(
-                        this.x - 2,
+                        this.x - 3,
                         this.y,
                         this.game,
                         this.position
@@ -533,7 +533,7 @@ class Ship extends Entity {
                     break;
                 case "right":
                     new this.shotType(
-                        this.x + 2,
+                        this.x + 3,
                         this.y,
                         this.game,
                         this.position
