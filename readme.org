@@ -1,6 +1,6 @@
 #+title: Cave Invaders
 * MVP
-Play the MVP at www.caveinvaders.com or  on [[Github Pages][https://michaelmrose.github.io/caveInvaders/]]
+Play the MVP at http://caveinvaders.com or  https://michaelmrose.github.io/caveInvaders/
 ** Tech to be used
 - JavaScript
 - CSS
