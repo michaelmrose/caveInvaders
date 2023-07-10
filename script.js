@@ -385,9 +385,14 @@ class Entity {
         let ps = this.positions();
         ps.forEach((p) => (this.game.board[p.y][p.x] = 0));
         game.entities = game.entities.filter((e) => e !== this);
+        this.onDestroy();
     }
+    onDestroy() {}
     onCollide(thing) {
         this.destroy();
+    }
+    positionValidForThing(thing, x, y) {
+        return thing.positions().includes({ x: x, y: y, color: "blue" });
     }
     checkForCollsion() {
         this.positions().forEach((p) => {
@@ -395,7 +400,9 @@ class Entity {
             if (
                 thingAtPosition !== 0 &&
                 thingAtPosition !== this &&
-                thingAtPosition.positions().includes({ x: p.x, y: p.y })
+                thingAtPosition
+                    .positions()
+                    .filter((e) => e.x === p.x && e.y === p.y).length > 0
             ) {
                 thingAtPosition.onCollide(this);
                 this.onCollide(thingAtPosition);
@@ -501,18 +508,17 @@ class PlayerShip extends Ship {
         super(x, y, game, position);
         this.shotType = PlayerShot;
         this.colors = ["blue", "lightblue"];
-        this.ticksToShoot = 20;
+        this.ticksToShoot = 80;
         this.strategies.push(() => chargeShot(this));
     }
     onCollide(thing) {
         this.destroy();
     }
-    destroy() {
-        super.destroy();
+    onDestroy() {
         this.game.gameOverSound.play();
         this.game.end();
     }
-    onCollide(thign) {}
+    onCollide(thing) {}
 }
 class AlienShip extends Ship {
     constructor(x, y, game, position) {
@@ -534,8 +540,7 @@ class AlienShip extends Ship {
             )
         );
     }
-    destroy() {
-        super.destroy();
+    onDestroy() {
         this.dieSound.play();
         game.score++;
     }
@@ -558,6 +563,7 @@ class PlayerShot extends Shot {
     constructor(x, y, game, position) {
         super(x, y, game, position);
         this.colors = ["red"];
+        this.ticksToMove = 1;
     }
 }
 class AlienShot extends Shot {
@@ -616,8 +622,7 @@ class Base extends Entity {
         if (thing instanceof AlienShip) this.destroy();
         if (thing instanceof Shot) thing.destroy();
     }
-    destroy() {
-        super.destroy();
+    onDestroy() {
         this.game.gameOverSound.play();
         game.end();
     }
