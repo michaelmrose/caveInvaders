@@ -16,12 +16,12 @@ body {
 h1 {
     font-family: "Charge Vector", sans-serif;
     font-size: 3vw;
-    color: #240747;
+    color: #735399;
 }
 aside {
     font-size: 1vw;
     color: white;
-    background: black;
+    background-color: black;
     border-radius: 5px;
     max-height: 45vw;
     height: 45vw;
