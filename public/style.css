@@ -5,7 +5,9 @@ body {
     flex-direction: row;
     align-items: top;
     justify-content: center;
-    background-color: lightcoral;
+    /* background-color: #ec5f5f; */
+    background-color: #ef7676;
+    /* background-color: lightcoral; */
 }
 #canvas {
     width: 59.85vw;
