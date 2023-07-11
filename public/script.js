@@ -220,6 +220,7 @@ class Game {
         this.clear();
         this.entities = [];
         this.enemiesToSpawn = 1;
+        this.ticksToGenerateEnemies = 300;
         this.nthTick = 0;
         this.paused = false;
         this.board = structuredClone(this.emptyBoard);
