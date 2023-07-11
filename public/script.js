@@ -40,6 +40,7 @@ class Game {
         this.board = [];
         this.row = [];
         this.ended = false;
+        this.ended = false;
         this.paused = false;
         this.enemiesToSpawn = 1;
         //used to take an action every nth tick
@@ -122,6 +123,7 @@ class Game {
             this.graveyard = [];
             this.buried = [];
             this.generateEnemies();
+            this.entities.forEach((e) => e.claimPointsOnBoard());
             this.entities.forEach((e) => {
                 e.strategies.forEach((s) => {
                     s(e);
@@ -187,6 +189,7 @@ class Game {
         this.rockIt();
     }
     start() {
+        this.started = true;
         this.score = 0;
         this.ended = false;
         this.startLoop();
@@ -196,6 +199,8 @@ class Game {
         clearInterval(this.loop);
         this.clear();
         this.entities = [];
+        this.enemiesToSpawn = 1;
+        this.nthTick = 0;
         this.paused = false;
         this.board = structuredClone(this.emptyBoard);
     }
@@ -739,7 +744,7 @@ let canvas = document.querySelector("#canvas");
 canvas.focus();
 let game = new Game(canvas);
 game.scenario();
-game.start();
+// game.start();
 
 // Logic at the start is a little tortued. We don't want to process key presses while paused but we DO want to process p to unpause
 function handleKeys(evt) {
@@ -775,6 +780,9 @@ function handleKeys(evt) {
             break;
         case "p":
             game.pause();
+            break;
+        case "Enter":
+            if (!game.started) game.start();
             break;
         case "Escape":
             game.restart();
