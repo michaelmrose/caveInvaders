@@ -15,14 +15,21 @@ body {
 }
 h1 {
     font-family: "Charge Vector", sans-serif;
-    margin-top: 20px;
     font-size: 3vw;
     color: #240747;
 }
 aside {
     font-size: 1vw;
     color: white;
+    background: black;
+    border-radius: 5px;
+    max-height: 45vw;
+    height: 45vw;
+    margin: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 #alien {
-    height: 23vw;
+    border-radius: 5px;
+    height: 15vw;
 }
