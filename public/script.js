@@ -148,7 +148,6 @@ class Game {
             let xRange = range(3, 21).concat(this.width - 20, this.width - 2);
             let yRange = range(3, 21).concat(this.height - 20, this.height - 2);
             if (xRange.includes(x) || yRange.includes(y)) {
-                console.log(`r:${r} `);
                 return r;
             }
         }
