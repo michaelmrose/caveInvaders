@@ -2,14 +2,14 @@ body {
     height: 100vh;
     margin: 0;
     display: flex;
-    flex-direction: row;
-    align-items: top;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     background-color: #ef7676;
 }
 #canvas {
-    width: 59.85vw;
-    height: 45vw;
+    width: 113vh;
+    height: 85vh;
     background-color: black;
     margin: 20px;
 }
@@ -20,6 +20,7 @@ h1 {
 }
 h2 {
     font-family: "Overlock", "sans-serif";
+    display: inline;
 }
 aside {
     font-size: 1vw;
@@ -28,12 +29,9 @@ aside {
     background-color: black;
     border-radius: 5px;
     max-height: 45vw;
-    height: 45vw;
-    margin: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-}
-#alien {
-    border-radius: 5px;
-    height: 15vw;
+    width: 50vw;
+    height: 15vh;
+    margin: 10px;
+    padding-top: 3vh;
+    text-align: center;
 }

@@ -250,10 +250,27 @@ class Game {
             "CAVE INVADERS",
             this.canvas.width / 10,
             this.canvas.width / 2,
-            this.canvas.width / 2 - this.canvas.width * 0.2
+            this.canvas.width / 2 - this.canvas.width * 0.22
         );
         this.ctx.fillStyle = "red";
         this.printToScreen("Hit Enter to Begin", this.canvas.width / 15);
+        this.ctx.fillStyle = "white";
+
+        this.printToScreen(
+            " Score points by destroying alien ships until you ",
+            this.canvas.width / 45,
+            this.canvas.width / 2,
+            this.canvas.height / 2 + this.canvas.height * 0.07,
+            "Istok Web"
+        );
+
+        this.printToScreen(
+            "get shot, crash, or an alien ship reaches your base.",
+            this.canvas.width / 45,
+            this.canvas.width / 2,
+            this.canvas.height / 2 + this.canvas.height * 0.1,
+            "Istok Web"
+        );
     }
     renderPaused() {
         if (this.paused === true) {
@@ -264,14 +281,22 @@ class Game {
         text,
         size,
         x = this.canvas.width / 2,
-        y = this.canvas.height / 2
+        y = this.canvas.height / 2,
+        font = "Charge Vector"
     ) {
         this.ctx.textAlign = "center";
-        this.ctx.font = `${size}px Charge Vector`;
+        this.ctx.font = `${size}px ${font}`;
         this.fillStyle = "red";
         this.ctx.fillText(text, x, y);
     }
     renderEnd() {
+        this.ctx.fillStyle = "#735399";
+        this.printToScreen(
+            "CAVE INVADERS",
+            this.canvas.width / 10,
+            this.canvas.width / 2,
+            this.canvas.width / 2 - this.canvas.width * 0.22
+        );
         this.ctx.fillStyle = "red";
         this.ctx.textAlign = "center";
         let rating;
@@ -280,23 +305,15 @@ class Game {
         else if (this.score > 25) rating = "killer";
         else if (this.score > 10) rating = "beginner";
         else if (this.score > 0) rating = "loser";
+
+        this.printToScreen(` Hit Escape to Restart`, this.canvas.width / 15);
+
+        this.ctx.fillStyle = "white";
         this.printToScreen(
-            `Score: ${this.score} `,
-            this.canvas.width / 15,
+            `SCORE: ${this.score}  RATING: ${rating} `,
+            this.canvas.width / 45,
             this.canvas.width / 2,
-            this.canvas.height / 2 - this.canvas.height * 0.1
-        );
-        this.printToScreen(
-            ` Rating: ${rating}`,
-            this.canvas.width / 15,
-            this.canvas.width / 2,
-            this.canvas.height / 2
-        );
-        this.printToScreen(
-            ` Hit Escape to Restart`,
-            this.canvas.width / 15,
-            this.canvas.width / 2,
-            this.canvas.height / 2 + this.canvas.height * 0.1
+            this.canvas.height / 2 + this.canvas.height * 0.07
         );
     }
 }

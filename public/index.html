@@ -4,7 +4,6 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Cave Invaders</title>
-        <!-- <script defer src="browser.js"></script> -->
         <script defer src="script.js"></script>
         <!-- free for noncommcial use -->
         <link
@@ -15,30 +14,17 @@
             href="https://fonts.googleapis.com/css2?family=Istok+Web&display=swap"
             rel="stylesheet"
         />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Istok+Web&family=Overlock&display=swap"
-            rel="stylesheet"
-        />
-
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
         <canvas id="canvas"></canvas>
-        <aside class="instructions">
-            <h1>CAVE INVADERS</h1>
-            <h2>RULES</h2>
-            Score points by destroying alien ships until you get shot, crash, or
-            an alien ship reaches your base.
-            <h2>CONTROLS</h2>
-            <ul>
-                <li><strong>Up/Down:</strong> Forward/Backward</li>
-                <li>
-                    <strong>Left/Right:</strong> Rotate
-                    <strong>WASD: Move</strong>
-                </li>
-                <li><strong>Space:</strong> Shoot P: Pause Escape: Restart</li>
-            </ul>
-            <img id="alien" src="alien.jpg" alt="alien" />
+        <aside id="instructions">
+            <span><strong>Up/Down:</strong> Forward/Backward</span>
+            <span>
+                <strong>Left/Right:</strong> Rotate
+                <strong>WASD: Move</strong>
+            </span>
+            <span><strong>Space:</strong> Shoot P: Pause Escape: Restart</span>
         </aside>
     </body>
 </html>
