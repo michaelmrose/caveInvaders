@@ -47,13 +47,20 @@ class Game {
         this.nthTick = 0;
         //In this many ticks we will generate another enemy and decrease this value leading to faster spawns
         this.ticksToGenerateEnemies = 300;
+
+        //filll a column with zeros to represent an empty square
         for (let i = 0; i < this.width; i++) {
             this.row.push(0);
         }
+
+        //fill the board with columns of zeros
         for (let i = 0; i < this.height; i++) {
             this.board.push(this.row.slice(0));
         }
+
+        //will be used to to reset the board to an empty state
         this.emptyBoard = structuredClone(this.board);
+
         //darn you canvas size rounding errors
         this.elementSize = this.canvas.width / this.width;
         this.canvas.height = this.elementSize * 96;
@@ -77,9 +84,7 @@ class Game {
     positionInsideBoard(p) {
         return p.x >= 0 && p.y >= 0 && p.x < this.width && p.y < this.height;
     }
-    hideInstructions() {
-        document.querySelector("aside").style.display = "none";
-    }
+
     render() {
         if (this.ended === false) {
             this.clear();
@@ -124,10 +129,17 @@ class Game {
                 }
                 e.positions().forEach((p) => (this.board[p.y][p.x] = 0));
             });
+            //to hold entities to be destroyed at start of tick
             this.graveyard = [];
+            //this will be examined to allow destoryed enemy ships to be counted
             this.buried = [];
             this.generateEnemies();
+            //ensure metadata map holds correct points for each entity
             this.entities.forEach((e) => e.claimPointsOnBoard());
+
+            // each entity has an array of functions it should evaluate every tick herein termed strategies
+            // actions are strategies for player entity should simply be merged with strategies as use case is identical
+
             this.entities.forEach((e) => {
                 e.strategies.forEach((s) => {
                     s(e);
@@ -144,7 +156,8 @@ class Game {
         let y = rand(3, this.height - 3);
         return [x, y];
     }
-    randomUnoccupiedPositionWithinBoard() {
+
+    randomPositionOnPeripheryOfBoard() {
         while (true) {
             let r = this.randomPositionWithinBoard();
             let x = r[0];
@@ -156,12 +169,14 @@ class Game {
             }
         }
     }
+
+    // ticks both get closer together and spawn more enemies as time goes by
     generateEnemies() {
         this.nthTick++;
         if (this.nthTick % this.ticksToGenerateEnemies === 0) {
             for (let i = 0; i < this.enemiesToSpawn; i++)
                 new AlienShip(
-                    ...this.randomUnoccupiedPositionWithinBoard(),
+                    ...this.randomPositionOnPeripheryOfBoard(),
                     this,
                     "up"
                 );
@@ -172,6 +187,7 @@ class Game {
             this.enemiesToSpawn = Math.min(this.enemiesToSpawn + 1, 8);
         }
     }
+    // setup for initial game state
     scenario() {
         this.player = new PlayerShip(
             this.width / 2 + 5,
@@ -184,7 +200,7 @@ class Game {
 
         for (let i = 0; i < 3; i++) {
             new AlienShip(
-                ...this.randomUnoccupiedPositionWithinBoard(),
+                ...this.randomPositionOnPeripheryOfBoard(),
                 this,
                 "up"
             );
@@ -302,6 +318,7 @@ class Entity {
         this.actions = [];
     }
 
+    // positions are obviously going to depend on orientation
     positionsUp() {
         return [{ x: this.x, y: this.y, color: this.colors[0] }];
     }
@@ -366,8 +383,13 @@ class Entity {
             return game.positionInsideBoard({ x: p.x, y: p.y });
         });
     }
+    //move and rotate functions that directly change position or orientation
+    // are effectively wrapped by changePositionOrReset by virtue of calling
+    //this function with their operation and having it perform or roll back the op
+    // to avoid an invalid state
+
     move(direction) {
-        this.changePositionOrReset((dir) => this._move(direction));
+        this.changePositionOrReset(() => this._move(direction));
     }
     _move(direction) {
         if (this.ticksTowardsMovement >= this.ticksToMove) {
@@ -437,6 +459,7 @@ class Entity {
             this.game.board[p.y][p.x] = this;
         });
     }
+
     rotateCounter() {
         this.changePositionOrReset(this._rotateCounter.bind(this));
     }
@@ -460,8 +483,6 @@ class Entity {
                 break;
         }
     }
-    // TODO THIS DOESNT KEEP PLAYER FROM ROTATING OUT OF THE BOARD
-    // THERE IS A LOGIC ERROR HERE
     rotateClockwise() {
         this.changePositionOrReset(this._rotateClockwise.bind(this));
     }
@@ -622,8 +643,6 @@ class AlienShip extends Ship {
         this.colors = ["green", "lightgreen"];
         this.ticksToShoot = 80;
         this.ticksToMove = 7;
-        //TODO consider setting this to a positive value to avoid doc holiday here shooting you instantly when you line up a shot
-        // and decay when you are not in line of sight
         this.target = undefined;
         this.strategies.push(() => chargeShot(this));
         this.strategies.push(() => shootPlayer(this));
