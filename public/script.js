@@ -216,7 +216,7 @@ class Game {
         game.start();
     }
     renderScore() {
-        this.printToScreen(this.score, 30, this.canvas.width - 30, 30);
+        this.printToScreen(this.score, 30, this.canvas.width - 50, 50);
     }
     renderStartMessage() {
         this.printToScreen("Hit Enter to Begin", 60);
@@ -233,7 +233,7 @@ class Game {
         y = this.canvas.height / 2
     ) {
         this.ctx.textAlign = "center";
-        this.ctx.font = `${size}px Comic Sans MS`;
+        this.ctx.font = `${size}px Charge Vector`;
         this.fillStyle = "red";
         this.ctx.fillText(text, x, y);
     }

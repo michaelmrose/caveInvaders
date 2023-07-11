@@ -5,9 +5,7 @@ body {
     flex-direction: row;
     align-items: top;
     justify-content: center;
-    /* background-color: #ec5f5f; */
     background-color: #ef7676;
-    /* background-color: lightcoral; */
 }
 #canvas {
     width: 59.85vw;
@@ -16,6 +14,7 @@ body {
     margin: 20px;
 }
 h1 {
+    font-family: "Charge Vector", sans-serif;
     margin-top: 20px;
     font-size: 3vw;
     color: #240747;
