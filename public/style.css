@@ -18,9 +18,13 @@ h1 {
     font-size: 3vw;
     color: #735399;
 }
+h2 {
+    font-family: "Overlock", "sans-serif";
+}
 aside {
     font-size: 1vw;
     color: white;
+    font-family: "Istok Web", sans-serif;
     background-color: black;
     border-radius: 5px;
     max-height: 45vw;
