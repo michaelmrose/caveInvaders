@@ -60,6 +60,7 @@ class Game {
         this.ctx.fillStyle = "red";
         this.score = 0;
         this.gameOverSound = new Audio("gameover.mp3");
+        this.renderStartMessage();
     }
     clear() {
         this.ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -217,6 +218,9 @@ class Game {
     renderScore() {
         this.printToScreen(this.score, 30, this.canvas.width - 30, 30);
     }
+    renderStartMessage() {
+        this.printToScreen("Hit Enter to Begin", 60);
+    }
     renderPaused() {
         if (this.paused === true) {
             this.printToScreen("Paused", 150);
@@ -243,9 +247,20 @@ class Game {
         else if (this.score > 25) rating = "killer";
         else if (this.score > 10) rating = "beginner";
         else if (this.score > 0) rating = "loser";
-        this.printToScreen(`Score: ${this.score} `, 50);
+        this.printToScreen(
+            `Score: ${this.score} `,
+            50,
+            this.canvas.width / 2,
+            this.canvas.height / 2 - this.canvas.height * 0.1
+        );
         this.printToScreen(
             ` Rating: ${rating}`,
+            50,
+            this.canvas.width / 2,
+            this.canvas.height / 2
+        );
+        this.printToScreen(
+            ` Hit Escape to Restart`,
             50,
             this.canvas.width / 2,
             this.canvas.height / 2 + this.canvas.height * 0.1
