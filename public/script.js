@@ -53,7 +53,7 @@ class Game {
             this.row.push(0);
         }
 
-        //fill the board with columns of zeros
+        //fill the board with rows of zeros
         for (let i = 0; i < this.height; i++) {
             this.board.push(this.row.slice(0));
         }
